@@ -2,6 +2,7 @@
 #include <errno.h>
 #include <modbus/modbus.h>
 #include <string.h>
+#include <assert.h>
 
 #include "ls1024b.h"
 
@@ -264,5 +265,5 @@ char    *chargingModeToString (uint16_t mode)
 int     setBatteryTypeAndCapacity (const int batteryType, const int batteryCapacity)
 {
     // not sure what asserts() range checking to do
-    assert( batterType >= 0x00 && batteryType <= 0x03 );
+    assert( batteryType >= 0x00 && batteryType <= 0x03 );
 }

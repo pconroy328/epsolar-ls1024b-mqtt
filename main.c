@@ -17,6 +17,7 @@
 
 #include <modbus/modbus.h>
 
+#include "logger.h"
 #include "ls1024b.h"
 #include "mqtt.h"
 
@@ -41,9 +42,11 @@ int main (int argc, char* argv[])
     char        mqttClientID[ 256 ];
     
     parseCommandLine( argc, argv );
+    Logger_Initialize( "ls1024b.log", 5 );
+    
     //
     // Need to create a unique client ID
-    MQTT_Initialize( clientID, controllerID, brokerHost );
+    MQTT_Initialize( controllerID, brokerHost );
     
     
     printf( "Opening %s, 115200 8N1\n", devicePort );
@@ -105,6 +108,7 @@ int main (int argc, char* argv[])
     MQTT_Teardown( NULL );
     puts( "Done" );
     modbus_close( ctx );
+    Logger_Terminate();
     
     return (EXIT_SUCCESS);
 }
