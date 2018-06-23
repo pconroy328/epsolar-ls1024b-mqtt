@@ -27,8 +27,8 @@ static  void    parseCommandLine( int, char ** );
 
 
 
-static  int     realTimeData_Seconds = 5;
-static  int     otherData_Seconds = 10;
+static  int     realTimeData_Seconds = 15;
+static  int     otherData_Seconds = 60;
 static  char    *brokerHost = "ec2-52-32-56-28.us-west-2.compute.amazonaws.com";
 static  char    *controllerID = "1";
 static  char    *devicePort = "/dev/ttyUSB0";
