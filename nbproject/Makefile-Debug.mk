@@ -56,15 +56,11 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=/usr/lib/x86_64-linux-gnu/libmodbus.so /usr/lib/x86_64-linux-gnu/libmosquitto.so -lm
+LDLIBSOPTIONS=-lm -lmodbus -lmosquitto -lpthread
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
 	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/ls1024b_mqtt
-
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/ls1024b_mqtt: /usr/lib/x86_64-linux-gnu/libmodbus.so
-
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/ls1024b_mqtt: /usr/lib/x86_64-linux-gnu/libmosquitto.so
 
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/ls1024b_mqtt: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
@@ -101,8 +97,6 @@ ${OBJECTDIR}/mqtt.o: mqtt.c
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r ${CND_BUILDDIR}/${CND_CONF}
-	${RM} -r ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libmodbus.so ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libmosquitto.so
-	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/ls1024b_mqtt
 
 # Subprojects
 .clean-subprojects:
