@@ -279,6 +279,7 @@ void    MQTT_PublishRealTimeStatus (const char *controllerID, const RealTimeStat
             "{ \"topic\":\"%s\", \"dateTime\":\"%s\", \
 \"batteryStatusValue\":%d, \
 \"chargingStatusValue\":%d, \
+\"dischargingStatusValue\":%d, \
 \"batteryVoltage\":\"%s\", \
 \"batteryTemp\":\"%s\", \
 \"batteryResistance\":\"%s\", \
@@ -302,6 +303,7 @@ void    MQTT_PublishRealTimeStatus (const char *controllerID, const RealTimeStat
         topic, getCurrentDateTime(),
         data->batteryStatusValue,
         data->chargingStatusValue,
+        data->dischargingStatusValue,
 
         data->batteryStatusVoltage,
         data->batteryStatusTemperature,
