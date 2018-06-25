@@ -5,6 +5,7 @@
 #include <assert.h>
 
 #include "ls1024b.h"
+#include "logger.h"
 
 
 // -----------------------------------------------------------------------------
@@ -260,10 +261,206 @@ char    *chargingModeToString (uint16_t mode)
     }
 }
 
-
 // -----------------------------------------------------------------------------
 int     setBatteryTypeAndCapacity (const int batteryType, const int batteryCapacity)
 {
     // not sure what asserts() range checking to do
     assert( batteryType >= 0x00 && batteryType <= 0x03 );
+}
+
+// -----------------------------------------------------------------------------
+int getChargingDeviceStatus (modbus_t *ctx)
+{
+    int         registerAddress = 0;
+    int         numBits = 1;                  
+    uint8_t     buffer[ 8 ];
+    
+    memset( buffer, '\0', sizeof buffer );
+    
+    Logger_LogDebug( "Getting Charging Device Status (Coil 0)\n" );
+    if (modbus_read_bits( ctx, registerAddress, numBits, buffer ) == -1) {
+        fprintf(stderr, "getChargingDeviceStatus() - Read bits failed: %s\n", modbus_strerror( errno ));
+        return -1;
+    }
+
+    //
+    //  Not sure if I should have read just one BIT or a full byte
+    printf( "getChargingDeviceStatus() - buffer[0] = %0X (hex)  Bottom bit = %0x\n", buffer[ 0 ], (buffer[ 0 ] & 0b00000001) );
+    Logger_LogDebug( "getChargingDeviceStatus() - buffer[0] = %0X (hex)  Bottom bit = %0x\n", buffer[ 0 ], (buffer[ 0 ] & 0b00000001) );
+    
+    //
+    // Mask off the top 7 just in case
+    return ( (buffer[ 0 ] & 0b00000001) );
+}
+
+// -----------------------------------------------------------------------------
+void    setChargingDeviceStatus (modbus_t *ctx, const int value)
+{
+    int         registerAddress = 0;
+
+    assert( (value == TRUE) || (value == FALSE) );
+    
+    Logger_LogDebug( "Setting Charging Device Status (Coil 0) to %0X\n", value );
+    
+    if (modbus_write_bit( ctx, registerAddress, value ) == -1) {
+        fprintf(stderr, "setChargingDeviceStatus() - Read bits failed: %s\n", modbus_strerror( errno ));
+        return;
+    }
+}
+
+// -----------------------------------------------------------------------------
+int getOutputControlMode (modbus_t *ctx)
+{
+    int     coilNum = 1;
+    return (getCoilValue( ctx, coilNum, "Output Control Mode (Coil 1)" ));
+}
+
+// -----------------------------------------------------------------------------
+void    setOutputControlMode (modbus_t *ctx, const int value)
+{
+    int     coilNum = 1;
+    setCoilValue( ctx, coilNum, value, "Output Control Mode (Coil 1)" );
+}
+
+// -----------------------------------------------------------------------------
+int getManualLoadControlMode (modbus_t *ctx)
+{
+    int     coilNum = 2;
+    return (getCoilValue( ctx, coilNum, "Manual Load Control Mode (Coil 2)" ));
+}
+
+// -----------------------------------------------------------------------------
+void    setManualLoadControlMode (modbus_t *ctx, const int value)
+{
+    int     coilNum = 2;
+    setCoilValue( ctx, coilNum, value, "Manual Load Control Mode (Coil 2)" );
+}
+
+// -----------------------------------------------------------------------------
+int getDefaultLoadControlMode (modbus_t *ctx)
+{
+    int     coilNum = 3;
+    return (getCoilValue( ctx, coilNum, "Default Load Control Mode (Coil 3)" ));
+}
+
+// -----------------------------------------------------------------------------
+void    setDefaultLoadControlMode (modbus_t *ctx, const int value)
+{
+    int     coilNum = 3;
+    setCoilValue( ctx, coilNum, value, "Default Load Control Mode (Coil 3)" );
+}
+
+// -----------------------------------------------------------------------------
+int getEnableLoadTestMode (modbus_t *ctx)
+{
+    int     coilNum = 5;
+    return (getCoilValue( ctx, coilNum, "Enable Load Test Mode (Coil 5)" ));
+}
+
+// -----------------------------------------------------------------------------
+void    setEnableLoadTestMode (modbus_t *ctx, const int value)
+{
+    int     coilNum = 5;
+    setCoilValue( ctx, coilNum, value, "Enable Load Test Mode (Coil 5)" );
+}
+
+// -----------------------------------------------------------------------------
+void    forceLoadOnOff (modbus_t *ctx, const int value)
+{
+    int     coilNum = 6;
+    setCoilValue( ctx, coilNum, value, "Force Load (Coil 6)" );
+}
+
+// -----------------------------------------------------------------------------
+void    restoreSystemDefaults (modbus_t *ctx)
+{
+    int     coilNum = 13;
+    setCoilValue( ctx, coilNum, 1, "Restore System Defaults (Coil 13)" );
+}
+
+// -----------------------------------------------------------------------------
+void    clearEnergyGeneratingStatistics (modbus_t *ctx)
+{
+    int     coilNum = 14;
+    setCoilValue( ctx, coilNum, 1, "Clear Energy Gen Stats Load (Coil 14)" );
+}
+
+// -----------------------------------------------------------------------------
+int getOverTemperatureInsideDevice (modbus_t *ctx)
+{
+    int         registerAddress = 0x2000;
+    uint8_t     value = 0;
+
+    Logger_LogDebug( "Getting overTemperatureInsideDevice\n" );
+    if (modbus_read_input_bits( ctx, registerAddress, 1, &value ) == -1) {
+        fprintf(stderr, "read_input_bits on register %X failed: %s\n", registerAddress, modbus_strerror( errno ));
+        return -1;
+    }
+    
+    //
+    //  Not sure if I should have read just one BIT or a full byte
+    Logger_LogDebug( "%s - value = %0X (hex)  Bottom bit = %0x\n", "Getting overTemperatureInsideDevice", value, (value & 0b00000001) );
+    
+    //
+    // Mask off the top 7 just in case
+    return ( value & 0b00000001 );    
+}
+
+// -----------------------------------------------------------------------------
+int isNightTime (modbus_t *ctx)
+{
+    int         registerAddress = 0x200C;
+    uint8_t     value = 0;
+
+    Logger_LogDebug( "Getting isNightTime\n" );
+    if (modbus_read_input_bits( ctx, registerAddress, 1, &value ) == -1) {
+        fprintf(stderr, "read_input_bits on register %X failed: %s\n", registerAddress, modbus_strerror( errno ));
+        return -1;
+    }
+    
+    //
+    //  Not sure if I should have read just one BIT or a full byte
+    Logger_LogDebug( "%s - value = %0X (hex)  Bottom bit = %0x\n", "Getting isNightTime", value, (value & 0b00000001) );
+    
+    //
+    // Mask off the top 7 just in case
+    return ( (value & 0b00000001) == 1 );    
+}
+
+
+// -----------------------------------------------------------------------------
+static
+int     getCoilValue (modbus_t *ctx, const int coilNum, const char *description)
+{
+    int         registerAddress = 1;
+    int         numBits = 1;                  
+    uint8_t     value = 0;
+    
+    
+    Logger_LogDebug( "%s\n", description );
+    if (modbus_read_bits( ctx, registerAddress, numBits, &value ) == -1) {
+        fprintf(stderr, "read_bits on coil %d failed: %s\n", coilNum, modbus_strerror( errno ));
+        return -1;
+    }
+
+    //
+    //  Not sure if I should have read just one BIT or a full byte
+    Logger_LogDebug( "%s - value = %0X (hex)  Bottom bit = %0x\n", description, value, (value & 0b00000001) );
+    
+    //
+    // Mask off the top 7 just in case
+    return ( value & 0b00000001 );
+}
+
+// -----------------------------------------------------------------------------
+static
+void    setCoilValue (modbus_t *ctx, const int coilNum, int value, const char *description)
+{
+    assert( (value == TRUE) || (value == FALSE) );
+    
+    Logger_LogDebug( "%s - setting %d to %d\n", description, coilNum, value );
+    if (modbus_write_bit( ctx, coilNum, value ) == -1) {
+        fprintf(stderr, "write_bit on coil %d failed: %s\n", coilNum, modbus_strerror( errno ));
+        return;
+    }
 }

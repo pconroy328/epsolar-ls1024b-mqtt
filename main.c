@@ -27,8 +27,8 @@ static  void    parseCommandLine( int, char ** );
 
 
 
-static  int     realTimeData_Seconds = 5;
-static  int     otherData_Seconds = 10;
+static  int     realTimeData_Seconds = 15;
+static  int     otherData_Seconds = 60;
 static  char    *brokerHost = "ec2-52-32-56-28.us-west-2.compute.amazonaws.com";
 static  char    *controllerID = "1";
 static  char    *devicePort = "/dev/ttyUSB0";
@@ -80,6 +80,14 @@ int main (int argc, char* argv[])
     StatisticalParameters_t statisticalParametersData;
     
     while (1) {
+        printf( "Night/Day check - it is %s\n", (isNightTime( ctx ) ? "Nighttime" : "Daytime" ) );
+        printf( "Charging Device Status Control is %s\n", (getChargingDeviceStatus( ctx ) ? "On" : "Off") );
+        printf( "Output Control Mode is %s\n", (getOutputControlMode( ctx ) ? "On" : "Off") );
+        printf( "Manual Load Control Mode is %s\n", (getManualLoadControlMode( ctx ) ? "On" : "Off") );
+        printf( "Default Load Control Mode is %s\n", (getDefaultLoadControlMode( ctx ) ? "On" : "Off") );
+        printf( "Enable Load Test Mode is %s\n", (getEnableLoadTestMode( ctx ) ? "On" : "Off") );
+
+
         
         //
         //  every time thru the loop - zero out the structs!

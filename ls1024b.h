@@ -96,8 +96,29 @@ void    getRatedData( modbus_t *ctx, RatedData_t *data );
 void    getSettings( modbus_t *ctx, Settings_t *data );
 void    getRealTimeStatus( modbus_t *ctx, RealTimeStatus_t *data );
 void    getRealTimeData( modbus_t *ctx, RealTimeData_t *data );
+int     getChargingDeviceStatus( modbus_t *ctx);
+void    setChargingDeviceStatus( modbus_t *ctx, const int value);
+int     getOutputControlMode( modbus_t *ctx );
+void    setOutputControlMode( modbus_t *ctx, const int value );
+int     getManualLoadControlMode( modbus_t *ctx );
+void    setManualLoadControlMode( modbus_t *ctx, const int value );
+int     getDefaultLoadControlMode( modbus_t *ctx );
+void    setDefaultLoadControlMode( modbus_t *ctx, const int value );
+int     getEnableLoadTestMode( modbus_t *ctx );
+void    setEnableLoadTestMode( modbus_t *ctx, const int value );
+void    forceLoadOnOff( modbus_t *ctx, const int value );
+void    restoreSystemDefaults( modbus_t *ctx );
+void    clearEnergyGeneratingStatistics( modbus_t *ctx );
+int     getOverTemperatureInsideDevice( modbus_t *ctx );
+int     isNightTime( modbus_t *ctx );
+
+
+
+
 static  char    *batteryTypeToString( uint16_t batteryType );
 static  char    *chargingModeToString( uint16_t mode );
+static  int     getCoilValue( modbus_t *ctx, const int coilNum, const char *description);
+static  void    setCoilValue( modbus_t *ctx, const int coilNum, int value, const char *description);
 
 
 #ifdef __cplusplus
