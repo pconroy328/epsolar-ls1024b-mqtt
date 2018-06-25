@@ -66,7 +66,7 @@ void    getRealTimeData (modbus_t *ctx, RealTimeData_t *data)
 void    getRealTimeStatus (modbus_t *ctx, RealTimeStatus_t *data)
 {
     int         registerAddress = 0x3200;
-    int         numBytes = 0x2;
+    int         numBytes = 0x3;
     uint16_t    buffer[ 32 ];
     
     memset( buffer, '\0', sizeof buffer );
@@ -76,29 +76,13 @@ void    getRealTimeStatus (modbus_t *ctx, RealTimeStatus_t *data)
         return;
     }
     
-    data->batteryStatus =  buffer[ 0x00 ];
-    /*
-     *  D3-D0: 01H Overvolt , 00H Normal , 02H Under Volt, 03H Low Volt Disconnect, 04H Fault
-     *  D7-D4: 00H Normal, 01H Over Temp.(Higher than the warning settings), 02H Low Temp.( Lower than the warning settings),
-     *  D8: Battery inerternal resistance abnormal 1, normal 0
-     *  D15: 1-Wrong identification for rated voltage
-     */
+    data->batteryStatusValue =  buffer[ 0x00 ];
+    decodeBatteryStatusBits( data, data->batteryStatusValue );
     
-    
-    data->chargingStatus =  buffer[ 0x01 ];
-    /*
-     *  D15-D14: Input volt status. 00 normal, 01 no power connected, 02H Higher volt input, 03H Input volt error.
-     *  D13: Charging MOSFET is short.
-     *  D12: Charging or Anti-reverse MOSFET is short.
-     *  D11: Anti-reverse MOSFET is short.
-     *  D10: Input is over current.
-     *  D9: The load is Over current.
-     *  D8: The load is short.
-     *  D7: Load MOSFET is short.
-     *  D4: PV Input is short.
-     *  D3-2: Charging status. 00 No charging, 01 Float, 02 Boost, 03 Equlization.
-     *  D1: 0 Normal, 1 Fault
-     */
+    data->chargingStatusValue =  buffer[ 0x01 ];
+    decodeChargingStatusBits( data, data->chargingStatusValue );
+
+    data->dischargingStatusValue =  buffer[ 0x02 ];
 }
 
 
@@ -511,6 +495,110 @@ void    setCoilValue (modbus_t *ctx, const int coilNum, int value, const char *d
         fprintf(stderr, "write_bit on coil %d failed: %s\n", coilNum, modbus_strerror( errno ));
         return;
     }
+}
+
+// -----------------------------------------------------------------------------
+static
+void    decodeBatteryStatusBits (RealTimeStatus_t *data, const int value) 
+{
+ /* D3-D0: 01H Overvolt , 00H Normal , 02H Under Volt, 03H Low Volt Disconnect, 04H Fault
+    D7-D4: 00H Normal, 01H Over Temp.(Higher than the warning settings), 02H Low Temp.(Lower than the warning settings),
+    D8: Battery inner resistance    abnormal 1, normal 0
+    D15: 1-Wrong identification for rated voltage*/   
+    switch (value & 0b0000000000001111) {
+        case    0x00:   data->batteryStatusVoltage = "Normal";      break;
+        case    0x01:   data->batteryStatusVoltage = "Over";        break;
+        case    0x02:   data->batteryStatusVoltage = "Under";       break;
+        case    0x03:   data->batteryStatusVoltage = "Low Voltage Disconnect";  break;
+        case    0x04:   data->batteryStatusVoltage = "Fault";       break;
+        default:        data->batteryStatusVoltage = "???"; 
+    }
+
+    switch ((value & 0b0000000011110000) >> 4) {
+        case    0x00:   data->batteryStatusTemperature = "Normal";      break;
+        case    0x01:   data->batteryStatusTemperature = "Higher";      break;
+        case    0x02:   data->batteryStatusTemperature = "Lower";       break;
+        default:        data->batteryStatusTemperature = "???"; 
+    }
+
+    data->batteryInnerResistance = ((value & 0b0000000111100000) ? "Abnormal" : "Normal");
+    data->batteryCorrectIdentification = ((value & 0b1000000000000) ? "Incorrect" : "Correct");
+}
+
+// -----------------------------------------------------------------------------
+static
+void    decodeChargingStatusBits (RealTimeStatus_t *data, const int value) 
+{
+    /*
+     *  D15-D14: Input volt status. 00 normal, 01 no power connected, 02H Higher volt input, 03H Input volt error.
+        D13: Charging MOSFET is short.
+        D12: Charging or Anti-reverse MOSFET is short.
+        D11: Anti-reverse MOSFET is short.
+        D10: Input is over current.
+        D9: The load is Over current.
+        D8: The load is short.
+        D7: Load MOSFET is short.
+        D4: PV Input is short.
+        D3-2: Charging status. 00 No charging,01 Float,02 Boost, 03 Equalization.
+        D1: 0 Normal, 1 Fault.
+        D0: 1 Running, 0 Standby.
+     */
+
+    switch ((value & 0b1100000000000000) >> 14) {
+        case    0x00:   data->chargingInputVoltageStatus = "Normal";      break;
+        case    0x01:   data->chargingInputVoltageStatus = "No power connected";        break;
+        case    0x02:   data->chargingInputVoltageStatus = "High";       break;
+        case    0x03:   data->chargingInputVoltageStatus = "Input Volt Error";  break;
+        default:        data->chargingInputVoltageStatus = "???"; 
+    }
+
+    data->chargingMOSFETShort = ((value & 0b0010000000000000) ? "SHORT" : "OK");
+    data->someMOSFETShort = ((value & 0b0001000000000000) ? "SHORT" : "OK");
+    data->antiReverseMOSFETShort = ((value & 0b0000100000000000) ? "SHORT" : "OK");
+    data->inputIsOverCurrent = ((value & 0b0000010000000000) ? "Yes" : "No");
+    data->loadIsOverCurrent = ((value & 0b0000001000000000) ? "Yes" : "No");
+    data->loadIsShort = ((value & 0b0000000100000000) ? "Yes" : "No");
+    data->loadMOSFETIsShort = ((value & 0b0000000010000000) ? "Yes" : "No");
+    data->pvInputIsShort = ((value & 0b0000000000010000) ? "Yes" : "No");
+
+    switch ((data->chargingStatusValue & 0b0000000000001100) >> 2) {
+        case    0x00:   data->chargingStatus = "Not Charging";      break;
+        case    0x01:   data->chargingStatus = "Float(ing)";        break;
+        case    0x02:   data->chargingStatus = "Boost(ing)";        break;
+        case    0x03:   data->chargingStatus = "Equalizing";        break;
+        default:        data->chargingStatus = "??";        break;
+    }
+    
+    data->chargingStatusNormal = ((value & 0b0000000000000010) ? "Fault" : "Normal");
+    data->chargingStatusRunning = ((value & 0b0000000000000001) ? "Running" : "Standby");
+}
+
+// -----------------------------------------------------------------------------
+static
+void    decodeDischargingStatusBits (RealTimeStatus_t *data, const int value) 
+{
+/*
+    D15-D14: 00H normal, 01H low,  02H High, 03H no access Input volt error.
+    D13-D12: output power:00-light load,01-moderate,02-rated,03-overload
+    D11: short circuit
+    D10: unable to discharge
+    D9: unable to stop discharging
+    D8: output voltage abnormal
+    D7: input overpressure
+    D6: high voltage side short circuit
+    D5: boost overpressure
+    D4: output overpressure
+    D1: 0 Normal, 1 Fault.
+    D0: 1 Running, 0 Standby.
+ */
+    switch ((value & 0b1100000000000000) >> 14) {
+        case    0x00:   data->dischargingInputVoltageStatus = "Normal";      break;
+        case    0x01:   data->dischargingInputVoltageStatus = "Low";        break;
+        case    0x02:   data->dischargingInputVoltageStatus = "High";       break;
+        case    0x03:   data->dischargingInputVoltageStatus = "No Access - Input Volt Error";  break;
+        default:        data->dischargingInputVoltageStatus = "???"; 
+    }
+    
 }
 
 // -----------------------------------------------------------------------------
