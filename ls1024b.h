@@ -113,6 +113,7 @@ int     getOverTemperatureInsideDevice( modbus_t *ctx );
 int     isNightTime( modbus_t *ctx );
 int     getBatteryStateOfCharge( modbus_t*ctx );
 float   getRemoteBatteryTemp( modbus_t *ctx );
+int     getBatteryRealRatedPower( modbus_t *ctx );
 
 
 

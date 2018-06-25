@@ -265,6 +265,23 @@ float   getRemoteBatteryTemp (modbus_t *ctx)
         fprintf(stderr, "getRemoteBatteryTemp() - Read failed: %s\n", modbus_strerror( errno ));
         return -1;
     }
+    printf( "       remote battery temp sent back: %0x (hex)  %d\n", buffer[ 0 ], buffer[ 0 ] );
+    return C2F( (float) buffer[ 0 ] );
+}
+
+// -----------------------------------------------------------------------------
+int     getBatteryRealRatedPower (modbus_t *ctx)
+{
+    int         registerAddress = 0x311D;
+    int         numBytes = 1; 
+    uint16_t    buffer[ 32 ];
+    
+    memset( buffer, '\0', sizeof buffer );
+    
+    if (modbus_read_input_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
+        fprintf(stderr, "getBatteryRealRatedPower() - Read failed: %s\n", modbus_strerror( errno ));
+        return -1;
+    }
     
     return C2F( (float) buffer[ 0 ] );
 }
