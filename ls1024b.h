@@ -112,7 +112,7 @@ void    clearEnergyGeneratingStatistics( modbus_t *ctx );
 int     getOverTemperatureInsideDevice( modbus_t *ctx );
 int     isNightTime( modbus_t *ctx );
 int     getBatteryStateOfCharge( modbus_t*ctx );
-
+float   getRemoteBatteryTemp( modbus_t *ctx );
 
 
 
@@ -121,7 +121,7 @@ static  char    *batteryTypeToString( uint16_t batteryType );
 static  char    *chargingModeToString( uint16_t mode );
 static  int     getCoilValue( modbus_t *ctx, const int coilNum, const char *description);
 static  void    setCoilValue( modbus_t *ctx, const int coilNum, int value, const char *description);
-
+static  float   C2F( float tempC );
 
 #ifdef __cplusplus
 }

@@ -12,7 +12,7 @@
 void    getRealTimeData (modbus_t *ctx, RealTimeData_t *data)
 {
     int         registerAddress = 0x3100;
-    int         numBytes = 0x13;                  // 0x14 and up gives 'illegal data address' error
+    int         numBytes = 0x12;
     uint16_t    buffer[ 32 ];
     
     memset( buffer, '\0', sizeof buffer );
@@ -53,14 +53,12 @@ void    getRealTimeData (modbus_t *ctx, RealTimeData_t *data)
     data->loadPower   =  (float) temp / 100.0;
     
     
-     data->batteryTemp =  ((float) buffer[ 0x10 ]) / 100.0;
-     data->caseTemp =  ((float) buffer[ 0x11 ]) / 100.0;
-     data->componentsTemp =  ((float) buffer[ 0x12 ]) / 100.0;
- 
-    //  Our LS1024B controller doesn't seem to support any register data above 0x12
-    //float   batterySOC =  ((float) buffer[ 0x1A ]) / 100.0;
-    //float   remoteBatteryTemp =  ((float) buffer[ 0x1B ]) / 100.0;
-    //float   systemRatedVoltage =  ((float) buffer[ 0x1D ]) / 100.0;
+     data->batteryTemp =  C2F( ((float) buffer[ 0x10 ]) / 100.0 );
+     data->caseTemp =  C2F( ((float) buffer[ 0x11 ]) / 100.0 );
+     
+     //
+     // According to a newer version of the Protocl (V2.3)
+     // the next register is at 0x311A.  So we'll pick those off individually
 }
 
 
@@ -233,8 +231,8 @@ void    getStatisticalParameters (modbus_t *ctx, StatisticalParameters_t *data)
     temp |= buffer[ 0x1B ];
     data->batteryCurrent =   (float) temp / 100.0;
     
-    data->batteryTemp =   ((float) buffer[ 0x01D ]) / 100.0;
-    data->ambientTemp =   ((float) buffer[ 0x01E ]) / 100.0;
+    data->batteryTemp =   C2F( ((float) buffer[ 0x01D ]) / 100.0 );
+    data->ambientTemp =   C2F (((float) buffer[ 0x01E ]) / 100.0 );
 }
 
 // -----------------------------------------------------------------------------
@@ -252,6 +250,23 @@ int     getBatteryStateOfCharge (modbus_t *ctx)
     }
     
     return buffer[ 0 ];
+}
+
+// -----------------------------------------------------------------------------
+float   getRemoteBatteryTemp (modbus_t *ctx)
+{
+    int         registerAddress = 0x311B;
+    int         numBytes = 1; 
+    uint16_t    buffer[ 32 ];
+    
+    memset( buffer, '\0', sizeof buffer );
+    
+    if (modbus_read_input_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
+        fprintf(stderr, "getRemoteBatteryTemp() - Read failed: %s\n", modbus_strerror( errno ));
+        return -1;
+    }
+    
+    return C2F( (float) buffer[ 0 ] );
 }
 
 //------------------------------------------------------------------------------
@@ -479,4 +494,12 @@ void    setCoilValue (modbus_t *ctx, const int coilNum, int value, const char *d
         fprintf(stderr, "write_bit on coil %d failed: %s\n", coilNum, modbus_strerror( errno ));
         return;
     }
+}
+
+// -----------------------------------------------------------------------------
+static
+float   C2F (float tempC)
+{
+    // T(°F) = T(°C) × 9/5 + 32
+    return ((tempC * 9.0 / 5.0) + 32.0);
 }
