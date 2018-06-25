@@ -432,14 +432,13 @@ int isNightTime (modbus_t *ctx)
 static
 int     getCoilValue (modbus_t *ctx, const int coilNum, const char *description)
 {
-    int         registerAddress = 1;
     int         numBits = 1;                  
     uint8_t     value = 0;
     
     
     Logger_LogDebug( "%s\n", description );
-    if (modbus_read_bits( ctx, registerAddress, numBits, &value ) == -1) {
-        fprintf(stderr, "read_bits on coil %d failed: %s\n", coilNum, modbus_strerror( errno ));
+    if (modbus_read_bits( ctx, coilNum, numBits, &value ) == -1) {
+        fprintf(stderr, "%s -- read_bits on coil %d failed: %s\n", description, coilNum, modbus_strerror( errno ));
         return -1;
     }
 
