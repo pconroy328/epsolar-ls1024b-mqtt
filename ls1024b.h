@@ -111,6 +111,8 @@ void    restoreSystemDefaults( modbus_t *ctx );
 void    clearEnergyGeneratingStatistics( modbus_t *ctx );
 int     getOverTemperatureInsideDevice( modbus_t *ctx );
 int     isNightTime( modbus_t *ctx );
+int     getBatteryStateOfCharge( modbus_t*ctx );
+
 
 
 

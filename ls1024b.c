@@ -237,6 +237,23 @@ void    getStatisticalParameters (modbus_t *ctx, StatisticalParameters_t *data)
     data->ambientTemp =   ((float) buffer[ 0x01E ]) / 100.0;
 }
 
+// -----------------------------------------------------------------------------
+int     getBatteryStateOfCharge (modbus_t *ctx)
+{
+    int         registerAddress = 0x311A;
+    int         numBytes = 1; 
+    uint16_t    buffer[ 32 ];
+    
+    memset( buffer, '\0', sizeof buffer );
+    
+    if (modbus_read_input_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
+        fprintf(stderr, "getRealTimeData() - Read failed: %s\n", modbus_strerror( errno ));
+        return -1;
+    }
+    
+    return buffer[ 0 ];
+}
+
 //------------------------------------------------------------------------------
 static
 char    *batteryTypeToString (uint16_t batteryType)
@@ -285,8 +302,8 @@ int getChargingDeviceStatus (modbus_t *ctx)
 
     //
     //  Not sure if I should have read just one BIT or a full byte
-    printf( "getChargingDeviceStatus() - buffer[0] = %0X (hex)  Bottom bit = %0x\n", buffer[ 0 ], (buffer[ 0 ] & 0b00000001) );
-    Logger_LogDebug( "getChargingDeviceStatus() - buffer[0] = %0X (hex)  Bottom bit = %0x\n", buffer[ 0 ], (buffer[ 0 ] & 0b00000001) );
+    printf( "    getChargingDeviceStatus() - buffer[0] = %0X (hex)  Bottom bit = %0x\n", buffer[ 0 ], (buffer[ 0 ] & 0b00000001) );
+    Logger_LogDebug( "     getChargingDeviceStatus() - buffer[0] = %0X (hex)  Bottom bit = %0x\n", buffer[ 0 ], (buffer[ 0 ] & 0b00000001) );
     
     //
     // Mask off the top 7 just in case

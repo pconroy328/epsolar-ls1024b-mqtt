@@ -83,12 +83,15 @@ int main (int argc, char* argv[])
         printf( "Night/Day check - it is %s\n", (isNightTime( ctx ) ? "Nighttime" : "Daytime" ) );
         printf( "Are we above the case temperature threshold: %s\n", getOverTemperatureInsideDevice( ctx ) ? "Yes" : "No" );
         printf( "Charging Device Status Control is %s\n", (getChargingDeviceStatus( ctx ) ? "On" : "Off") );
-        printf( "Output Control Mode is %s\n", (getOutputControlMode( ctx ) ? "On" : "Off") );
-        printf( "Manual Load Control Mode is %s\n", (getManualLoadControlMode( ctx ) ? "On" : "Off") );
-        printf( "Default Load Control Mode is %s\n", (getDefaultLoadControlMode( ctx ) ? "On" : "Off") );
-        printf( "Enable Load Test Mode is %s\n", (getEnableLoadTestMode( ctx ) ? "On" : "Off") );
+        printf( "Output Control Mode is %s\n", (getOutputControlMode( ctx ) ? "Manual" : "Automatic") );
+        printf( "Manual Load Control Mode is %s\n", (getManualLoadControlMode( ctx ) ? "Manual On" : "Manual Off") );
+        printf( "Default Load Control Mode is %s\n", (getDefaultLoadControlMode( ctx ) ? "Manual On" : "Manual Off") );
+        printf( "Enable Load Test Mode is %s\n", (getEnableLoadTestMode( ctx ) ? "Enabled" : "Disabled") );
 
-
+        printf( "\n" );
+        printf( "Battery SoC: %d\n", getBatteryStateOfCharge( ctx ) );
+        printf( "\n" );
+        
         
         //
         //  every time thru the loop - zero out the structs!
