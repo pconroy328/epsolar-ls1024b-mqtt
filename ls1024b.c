@@ -296,10 +296,10 @@ float   getBatteryRealRatedPower (modbus_t *ctx)
 }
 
 // -----------------------------------------------------------------------------
-void    getRealtimeClock (modbus_t *ctx)
+void    getRealtimeClock (modbus_t *ctx, int *seconds, int *minutes, int *hour, int *day, int *month, int *year)
 {
     int         registerAddress = 0x9013;
-    int         numBytes = 0x01;
+    int         numBytes = 0x03;
     uint16_t    buffer[ 32 ];
 
     memset( buffer, '\0', sizeof buffer );
@@ -309,18 +309,12 @@ void    getRealtimeClock (modbus_t *ctx)
         return;
     }
     
-    printf( "      Real time clock read - one word: %0x  %d\n", buffer[ 0 ], buffer[ 0 ] );
-
-    registerAddress = 0x9014;
-    numBytes = 0x02;
-
-    memset( buffer, '\0', sizeof buffer );
-    
-    if (modbus_read_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
-        fprintf(stderr, "getRealtimeClock() - Read failed: %s\n", modbus_strerror( errno ));
-        return;
-    }
-    printf( "      Real time clock read - next two word: %0x  %d          %0x  %d\n", buffer[ 0 ], buffer[ 0 ],buffer[ 1 ], buffer[ 1 ] );
+    *seconds = (buffer[ 0 ] & 0x0F);
+    *minutes = ((buffer[ 0 ] & 0xF0) >> 8);
+    *hour = (buffer[ 1 ] & 0x0F);
+    *day = ((buffer[ 1 ] & 0xF0) >> 8);
+    *month = (buffer[ 2 ] & 0x0F);
+    *year = ((buffer[ 2 ] & 0xF0) >> 8);
 }
 
 

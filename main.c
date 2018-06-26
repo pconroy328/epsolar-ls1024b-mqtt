@@ -89,7 +89,9 @@ int main (int argc, char* argv[])
         printf( "Enable Load Test Mode is %s\n", (getEnableLoadTestMode( ctx ) ? "Enabled" : "Disabled") );
         
         printf( "\n" );
-        getRealtimeClock( ctx );
+        int seconds, minutes, hour, day, month, year;
+        getRealtimeClock( ctx, &seconds, &minutes, &hour, &day, &month, &year );
+        printf( "System Clock set to: %02d/%02d/%04d  %02d:%02d:%02d\n", day, month, year, hour, minutes, seconds );
         printf( "\n" );
         
         

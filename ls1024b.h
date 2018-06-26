@@ -152,7 +152,8 @@ int     isNightTime( modbus_t *ctx );
 int     getBatteryStateOfCharge( modbus_t*ctx );
 float   getRemoteBatteryTemperature( modbus_t *ctx );
 float   getBatteryRealRatedPower( modbus_t *ctx );
-void    getRealtimeClock (modbus_t *ctx);
+void    getRealtimeClock( modbus_t *ctx, int *seconds, int *minutes, int *hour, int *day, int *month, int *year );
+void    setRealtimeClock( modbus_t *ctx, const int *seconds, const int minutes, const int hour, const int day, const int month, const int year );
 
 
 
