@@ -331,8 +331,6 @@ void    setRealtimeClock (modbus_t *ctx, const int seconds, const int minutes, c
     assert( month >= 1 && month <= 12 );
     assert( year >= 1 && year <= 99 );
     
-    int         registerAddress = 0x9013;
-    int         numBytes = 0x03;
     uint16_t    buffer[ 32 ];
     
     memset( buffer, '\0', sizeof buffer );
@@ -356,6 +354,15 @@ void    setRealtimeClock (modbus_t *ctx, const int seconds, const int minutes, c
     if (dy != day)        puts( "Error on day" );
     if (mn != month)        puts( "Error on month" );
     if (yr != year)        puts( "Error on year" );
+
+    //  int modbus_write_registers(modbus_t *ctx, int addr, int nb, const uint16_t *src);
+
+    int         registerAddress = 0x9013;
+    int         numBytes = 0x03;
+    if (modbus_write_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
+        fprintf(stderr, "setRealTimeClock() - write failed: %s\n", modbus_strerror( errno ));
+        return;
+    }
 
 }
 
