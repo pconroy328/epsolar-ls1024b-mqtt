@@ -96,7 +96,7 @@ int main (int argc, char* argv[])
 
         setBatteryCapacity( ctx, 5 );
         setBatteryType( ctx, 1 );
-        setHighVoltageDisconnect( ctx, 15.5 );
+        setHighVoltageDisconnect( ctx, 16.0 );
         
         
         //

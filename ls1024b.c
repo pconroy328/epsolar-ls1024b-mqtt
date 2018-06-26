@@ -339,8 +339,8 @@ void    setRealtimeClock (modbus_t *ctx, const int seconds, const int minutes, c
     buffer[ 1 ] = (day << 8) | hour;
     buffer[ 2 ] = (year << 8) | month;
     
-    printf( "We're going to write this to the RTC:, %02d/%02d/%04d  %02d:%02d:%02d\n", day, month, year, hour, minutes, seconds );
-    printf( "Buffer is   %X   %X   %x\n", buffer[ 0 ], buffer[ 1 ], buffer[ 2 ] );
+    //printf( "We're going to write this to the RTC:, %02d/%02d/%04d  %02d:%02d:%02d\n", day, month, year, hour, minutes, seconds );
+    //printf( "Buffer is   %X   %X   %x\n", buffer[ 0 ], buffer[ 1 ], buffer[ 2 ] );
 
     int se = (buffer[ 0 ] & 0x00FF);
     int mi = ((buffer[ 0 ] & 0xFF00) >> 8);
@@ -456,7 +456,7 @@ int getChargingDeviceStatus (modbus_t *ctx)
 
     //
     //  Not sure if I should have read just one BIT or a full byte
-    printf( "    getChargingDeviceStatus() - buffer[0] = %0X (hex)  Bottom bit = %0x\n", buffer[ 0 ], (buffer[ 0 ] & 0b00000001) );
+    // printf( "    getChargingDeviceStatus() - buffer[0] = %0X (hex)  Bottom bit = %0x\n", buffer[ 0 ], (buffer[ 0 ] & 0b00000001) );
     Logger_LogDebug( "     getChargingDeviceStatus() - buffer[0] = %0X (hex)  Bottom bit = %0x\n", buffer[ 0 ], (buffer[ 0 ] & 0b00000001) );
     
     //
@@ -784,9 +784,21 @@ static
 int     setFloatSettingParameter (modbus_t *ctx, int registerAddress, float floatValue)
 {
     uint16_t    buffer[ 2 ];
-   
+
+
+    memset( buffer, '\0', sizeof buffer );
+    
+    if (modbus_read_registers( ctx, registerAddress, 0x01, buffer ) == -1) {
+        fprintf(stderr, "modbus_read_registers() - Read failed: %s\n", modbus_strerror( errno ));
+        return FALSE;
+    }
+    
+    printf( "   setFloatSettingParameter() -- before setting the value, the read returned: %X\n", buffer[ 0 ] );
+    
     memset( buffer, '\0', sizeof buffer );
     buffer[ 0 ] = (uint16_t) (floatValue / 100.0);
+    
+    printf( "   setFloatSettingParameter() -- prepping write, buffer is: %X\n", buffer[ 0 ] );
     
     if (modbus_write_registers( ctx, registerAddress, 0x01, buffer ) == -1) {
         fprintf(stderr, "setFloatSettingParameter() - write of value %0.2f to register %X failed: %s\n", floatValue, registerAddress, modbus_strerror( errno ));
