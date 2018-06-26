@@ -222,7 +222,6 @@ void    MQTT_PublishRealTimeData (const char *controllerID, const RealTimeData_t
 \"batteryTemp\":%0.1f, \
 \"batteryVoltage\":%0.2f, \
 \"caseTemp\":%0.1f, \
-\"componentsTemp\":%0.1f, \
 \"loadCurrent\":%0.2f, \
 \"loadPower\":%0.2f, \
 \"loadVoltage\":%0.2f, \
@@ -236,7 +235,6 @@ void    MQTT_PublishRealTimeData (const char *controllerID, const RealTimeData_t
         data->batteryTemp,
         data->batteryVoltage,
         data->caseTemp,
-        data->componentsTemp,
         data->loadCurrent,
         data->loadPower,
         data->loadVoltage,
@@ -298,7 +296,21 @@ void    MQTT_PublishRealTimeStatus (const char *controllerID, const RealTimeStat
 "" \
 \"chargingStatus\":\"%s\",\
 \"chargingStatusFault\":\"%s\",\
-\"chargingStatusRunning\":\"%s\" }",
+\"chargingStatusRunning\":\"%s\",\
+"" \
+\"dischargingInputVoltageStatus\":\"%s\",\
+\"dischargingOutputPower\":\"%s\",\
+\"dischargingShortCircuit\":\"%s\",\
+\"unableToDischarge\":\"%s\",\
+\"unableToStopDischarging\":\"%s\",\
+\"outputVoltageAbnormal\":\"%s\",\
+\"inputOverpressure\":\"%s\",\
+\"highVoltageSideShort\":\"%s\",\
+\"boostOverpressure\":\"%s\",\
+\"outputOverpressure\":\"%s\",\
+\"dischargingStatusNormal\":\"%s\",\
+\"dischargingStatusRunning\":\"%s\" }",
+    
     
         topic, getCurrentDateTime(),
         data->batteryStatusValue,
@@ -323,7 +335,21 @@ void    MQTT_PublishRealTimeStatus (const char *controllerID, const RealTimeStat
             
         data->chargingStatus,
         data->chargingStatusNormal,
-        data->chargingStatusRunning
+        data->chargingStatusRunning,
+    
+        data->dischargingInputVoltageStatus,
+        data->dischargingOutputPower,
+        data->dischargingShortCircuit,
+        data->unableToDischarge,
+        data->unableToStopDischarging,
+        data->outputVoltageAbnormal,
+        data->inputOverpressure,
+        data->highVoltageSideShort,
+        data->boostOverpressure,
+        data->outputOverpressure,
+        data->dischargingStatusNormal,
+        data->dischargingStatusRunning
+    
     );
 
     printf( "Handformed JSON [%s]\n\n", message );
@@ -414,10 +440,8 @@ void    MQTT_PublishStatisticalParameters (const char *controllerID, const Stati
 \"maximumBatteryVoltageToday\":%0.2f, \
 \"minimumInputVoltageToday\":%0.2f, \
 \"maximumInputVoltageToday\":%0.2f, \
-\"CO2Reduction\":%0.1f, \
-\"ambientTemp\":%0.1f, \
 \"batteryCurrent\":%0.2f, \
-\"batteryTemp\":%0.1f }",    
+\"batteryVoltage\":%0.1f }",    
         topic, getCurrentDateTime(),
             data->consumedEnergyToday,
             data->consumedEnergyMonth,
@@ -431,10 +455,8 @@ void    MQTT_PublishStatisticalParameters (const char *controllerID, const Stati
             data->maximumBatteryVoltageToday,
             data->minimumInputVoltageToday,
             data->maximumInputVoltageToday,
-            data->CO2Reduction,
-            data->ambientTemp,
             data->batteryCurrent,
-            data->batteryTemp );
+            data->batteryVoltage );
 
     printf( "Handformed JSON [%s]\n\n", message );
     

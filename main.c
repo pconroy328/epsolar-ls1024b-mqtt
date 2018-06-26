@@ -89,11 +89,6 @@ int main (int argc, char* argv[])
         printf( "Enable Load Test Mode is %s\n", (getEnableLoadTestMode( ctx ) ? "Enabled" : "Disabled") );
 
         printf( "\n" );
-        printf( "Battery SoC: %d\n", getBatteryStateOfCharge( ctx ) );
-        printf( "Battery Temp (Remote Sensor): %0.1f\n", getRemoteBatteryTemp( ctx ) );
-        printf( "Battery Real Rated Power: %0d\n", getBatteryRealRatedPower( ctx ) );
-        
-        printf( "\n" );
         
         
         //

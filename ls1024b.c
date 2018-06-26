@@ -9,6 +9,52 @@
 
 
 // -----------------------------------------------------------------------------
+void    getRatedData (modbus_t *ctx, RatedData_t *data)
+{
+    int         registerAddress = 0x3000;
+    int         numBytes = 0x09;                  // 0x0A and up gives 'illegal data address' error
+    uint16_t    buffer[ 32 ];
+    
+    memset( buffer, '\0', sizeof buffer );
+    
+    if (modbus_read_input_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
+        fprintf(stderr, "getRatedData() - Read failed: %s\n", modbus_strerror( errno ));
+        return;
+    }
+
+    
+    data->pvArrayRatedVoltage     = ((float) buffer[ 0x00 ]) / 100.0;
+    data->pvArrayRatedCurrent     = ((float) buffer[ 0x01 ]) / 100.0;
+
+    long temp  = buffer[ 0x03 ] << 16;
+    temp |= buffer[ 0x02 ];
+    data->pvArrayRatedPower =  (float) temp / 100.0;
+
+    data->batteryRatedVoltage     = ((float) buffer[ 0x04 ]) / 100.0;
+    data->batteryRatedCurrent     = ((float) buffer[ 0x05 ]) / 100.0;
+ 
+    temp  = buffer[ 0x07 ] << 16;
+    temp |= buffer[ 0x06 ];
+    data->batteryRatedPower =  (float) temp / 100.0;
+
+    data->chargingMode = chargingModeToString( buffer[ 0x08 ] );                  // 0x01 == PWM
+
+    //
+    //  Pick up the last value
+    registerAddress = 0x300E;
+    numBytes = 0x01;
+    
+    memset( buffer, '\0', sizeof buffer );
+    
+    if (modbus_read_input_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
+        fprintf(stderr, "getRatedData() - Second Read failed of regsiter 0x200E: %s\n", modbus_strerror( errno ));
+        return;
+    }
+    data->ratedCurrentOfLoad = ((float) buffer[ 0 ]) / 100.0;
+}
+
+
+// -----------------------------------------------------------------------------
 void    getRealTimeData (modbus_t *ctx, RealTimeData_t *data)
 {
     int         registerAddress = 0x3100;
@@ -35,9 +81,11 @@ void    getRealTimeData (modbus_t *ctx, RealTimeData_t *data)
     
     
     // ---------------------------------------------
+    // NB: These two were in the v1.5 spec but are gone from the V2,3 document!
     //  Battery Values - Volts, Amps and Watts
-    data->batteryVoltage =  ((float) buffer[ 0x04 ]) / 100.0;
-    data->batteryCurrent =  ((float) buffer[ 0x05 ]) / 100.0;
+    // data->batteryVoltage =  ((float) buffer[ 0x04 ]) / 100.0;
+    // data->batteryCurrent =  ((float) buffer[ 0x05 ]) / 100.0;
+    //
 
     temp = buffer[ 0x07 ] << 16;
     temp |= buffer[ 0x06 ];
@@ -57,8 +105,11 @@ void    getRealTimeData (modbus_t *ctx, RealTimeData_t *data)
      data->caseTemp =  C2F( ((float) buffer[ 0x11 ]) / 100.0 );
      
      //
-     // According to a newer version of the Protocl (V2.3)
+     // According to a newer version of the Protocol (V2.3)
      // the next register is at 0x311A.  So we'll pick those off individually
+     data->batterySOC = getBatteryStateOfCharge( ctx );
+     data->remoteBatteryTemperature = getRemoteBatteryTemperature( ctx );
+     data->batteryRealRatedPower = getBatteryRealRatedPower( ctx );
 }
 
 
@@ -83,77 +134,7 @@ void    getRealTimeStatus (modbus_t *ctx, RealTimeStatus_t *data)
     decodeChargingStatusBits( data, data->chargingStatusValue );
 
     data->dischargingStatusValue =  buffer[ 0x02 ];
-}
-
-
-// -----------------------------------------------------------------------------
-void    getSettings (modbus_t *ctx, Settings_t *data)
-{
-    int         registerAddress = 0x9000;
-    int         numBytes = 0x0A;                    // 0x10 and up gives 'illegal data address' error
-    uint16_t    buffer[ 32 ];
-
-    memset( buffer, '\0', sizeof buffer );
-    
-        if (modbus_read_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
-        fprintf(stderr, "getSettings() - Read failed: %s\n", modbus_strerror( errno ));
-        return;
-    }
-    
-    data->batteryType =  batteryTypeToString( buffer[ 0x00 ] );
-    data->batteryCapacity =  buffer[ 0x01 ];
-    
-     data->tempCompensationCoeff   = ((float) buffer[ 0x02 ]) / 100.0;
-     data->highVoltageDisconnect   = ((float) buffer[ 0x03 ]) / 100.0;
-     data->chargingLimitVoltage    = ((float) buffer[ 0x04 ]) / 100.0;
-     data->overVoltageReconnect    = ((float) buffer[ 0x05 ]) / 100.0;
-     data->equalizationVoltage     = ((float) buffer[ 0x06 ]) / 100.0;
-     data->boostVoltage            = ((float) buffer[ 0x07 ]) / 100.0;
-     data->floatVoltage            = ((float) buffer[ 0x08 ]) / 100.0;
-     data->boostReconnectVoltage   = ((float) buffer[ 0x09 ]) / 100.0;
-
-    //  Our LS1024B controller doesn't seem to support any register data above 0x0A
-    //float   lowVoltageReconnect     = ((float) buffer[ 0x0A ]) / 100.0;
-    //float   underVoltageRecover     = ((float) buffer[ 0x0B ]) / 100.0;
-    //float   underVoltageWarning     = ((float) buffer[ 0x0C ]) / 100.0;
-    //float   lowVoltageDisconnect    = ((float) buffer[ 0x0D ]) / 100.0;
-    //float   dischargingLimitVoltage = ((float) buffer[ 0x0E ]) / 100.0;
-    //uint16_t    realTimeClock1      = buffer[ 0x13 ];
-    //uint16_t    realTimeClock2      = buffer[ 0x14 ];
-    //uint16_t    realTimeClock3      = buffer[ 0x15 ];
-    //  There are more fields...
-}
-
-// -----------------------------------------------------------------------------
-void    getRatedData (modbus_t *ctx, RatedData_t *data)
-{
-    int         registerAddress = 0x3000;
-    int         numBytes = 0x09;                  // 0x0A and up gives 'illegal data address' error
-    uint16_t    buffer[ 32 ];
-    
-    memset( buffer, '\0', sizeof buffer );
-    
-    if (modbus_read_input_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
-        fprintf(stderr, "getRatedData() - Read failed: %s\n", modbus_strerror( errno ));
-        return;
-    }
-
-    
-     data->pvArrayRatedVoltage     = ((float) buffer[ 0x00 ]) / 100.0;
-     data->pvArrayRatedCurrent     = ((float) buffer[ 0x01 ]) / 100.0;
-
-    long temp  = buffer[ 0x03 ] << 16;
-    temp |= buffer[ 0x02 ];
-    data->pvArrayRatedPower =  (float) temp / 100.0;
-
-     data->batteryRatedVoltage     = ((float) buffer[ 0x04 ]) / 100.0;
-     data->batteryRatedCurrent     = ((float) buffer[ 0x05 ]) / 100.0;
- 
-    temp  = buffer[ 0x07 ] << 16;
-    temp |= buffer[ 0x06 ];
-    data->batteryRatedPower =  (float) temp / 100.0;
-
-    data->chargingMode = chargingModeToString( buffer[ 0x08 ] );                  // 0x01 == PWM
+    decodeDischargingStatusBits( data, data->dischargingStatusValue );
 }
 
 // -----------------------------------------------------------------------------
@@ -207,17 +188,65 @@ void    getStatisticalParameters (modbus_t *ctx, StatisticalParameters_t *data)
     temp |= buffer[ 0x12 ];
     data->totalGeneratedEnergy =   (float) temp / 100.0;
     
-    temp  = buffer[ 0x15 ] << 16;
-    temp |= buffer[ 0x14 ];
-    data->CO2Reduction =   (float) temp / 100.0;
+\
+    //
+    // Another difference between v1.5 and v2.3 of the spec
+    //  skip ahead to more data
+    registerAddress = 0x331A;
+    numBytes = 0x03;
+    memset( buffer, '\0', sizeof buffer );
     
-    temp  = buffer[ 0x1C ] << 16;
-    temp |= buffer[ 0x1B ];
-    data->batteryCurrent =   (float) temp / 100.0;
-    
-    data->batteryTemp =   C2F( ((float) buffer[ 0x01D ]) / 100.0 );
-    data->ambientTemp =   C2F (((float) buffer[ 0x01E ]) / 100.0 );
+    if (modbus_read_input_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
+        fprintf(stderr, "getStatisicalParameters() - Second Read or register 0x331A failed: %s\n", modbus_strerror( errno ));
+        return;
+    }
+   
+    data->batteryVoltage =   ((float) buffer[ 0x00 ]) / 100.0;
+            
+    temp  = buffer[ 0x02 ] << 16;
+    temp |= buffer[ 0x01 ];
+    data->batteryCurrent = (float) temp / 100.0;
 }
+
+// -----------------------------------------------------------------------------
+void    getSettings (modbus_t *ctx, Settings_t *data)
+{
+    int         registerAddress = 0x9000;
+    int         numBytes = 0x0A;                    // 0x10 and up gives 'illegal data address' error
+    uint16_t    buffer[ 32 ];
+
+    memset( buffer, '\0', sizeof buffer );
+    
+    if (modbus_read_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
+        fprintf(stderr, "getSettings() - Read failed: %s\n", modbus_strerror( errno ));
+        return;
+    }
+    
+    data->batteryType =  batteryTypeToString( buffer[ 0x00 ] );
+    data->batteryCapacity =  buffer[ 0x01 ];
+    
+    data->tempCompensationCoeff   = ((float) buffer[ 0x02 ]) / 100.0;
+    data->highVoltageDisconnect   = ((float) buffer[ 0x03 ]) / 100.0;
+    data->chargingLimitVoltage    = ((float) buffer[ 0x04 ]) / 100.0;
+    data->overVoltageReconnect    = ((float) buffer[ 0x05 ]) / 100.0;
+    data->equalizationVoltage     = ((float) buffer[ 0x06 ]) / 100.0;
+    data->boostVoltage            = ((float) buffer[ 0x07 ]) / 100.0;
+    data->floatVoltage            = ((float) buffer[ 0x08 ]) / 100.0;
+    data->boostReconnectVoltage   = ((float) buffer[ 0x09 ]) / 100.0;
+
+    //  Our LS1024B controller doesn't seem to support any register data above 0x0A
+    data->lowVoltageReconnect     = ((float) buffer[ 0x0A ]) / 100.0;
+    //float   underVoltageRecover     = ((float) buffer[ 0x0B ]) / 100.0;
+    //float   underVoltageWarning     = ((float) buffer[ 0x0C ]) / 100.0;
+    //float   lowVoltageDisconnect    = ((float) buffer[ 0x0D ]) / 100.0;
+    //float   dischargingLimitVoltage = ((float) buffer[ 0x0E ]) / 100.0;
+    //uint16_t    realTimeClock1      = buffer[ 0x13 ];
+    //uint16_t    realTimeClock2      = buffer[ 0x14 ];
+    //uint16_t    realTimeClock3      = buffer[ 0x15 ];
+    //  There are more fields...
+}
+
+
 
 // -----------------------------------------------------------------------------
 int     getBatteryStateOfCharge (modbus_t *ctx)
@@ -237,7 +266,7 @@ int     getBatteryStateOfCharge (modbus_t *ctx)
 }
 
 // -----------------------------------------------------------------------------
-float   getRemoteBatteryTemp (modbus_t *ctx)
+float   getRemoteBatteryTemperature (modbus_t *ctx)
 {
     int         registerAddress = 0x311B;
     int         numBytes = 1; 
@@ -250,11 +279,11 @@ float   getRemoteBatteryTemp (modbus_t *ctx)
         return -1;
     }
     printf( "       remote battery temp sent back: %0x (hex)  %d\n", buffer[ 0 ], buffer[ 0 ] );
-    return C2F( (float) buffer[ 0 ] );
+    return C2F( (float) buffer[ 0 ] / 100.0 );
 }
 
 // -----------------------------------------------------------------------------
-int     getBatteryRealRatedPower (modbus_t *ctx)
+float   getBatteryRealRatedPower (modbus_t *ctx)
 {
     int         registerAddress = 0x311D;
     int         numBytes = 1; 
@@ -267,7 +296,7 @@ int     getBatteryRealRatedPower (modbus_t *ctx)
         return -1;
     }
     
-    return C2F( (float) buffer[ 0 ] );
+    return ((float) buffer[ 0 ] / 100.0);
 }
 
 //------------------------------------------------------------------------------
@@ -591,6 +620,7 @@ void    decodeDischargingStatusBits (RealTimeStatus_t *data, const int value)
     D1: 0 Normal, 1 Fault.
     D0: 1 Running, 0 Standby.
  */
+    //                 1234567890123456
     switch ((value & 0b1100000000000000) >> 14) {
         case    0x00:   data->dischargingInputVoltageStatus = "Normal";      break;
         case    0x01:   data->dischargingInputVoltageStatus = "Low";        break;
@@ -598,6 +628,28 @@ void    decodeDischargingStatusBits (RealTimeStatus_t *data, const int value)
         case    0x03:   data->dischargingInputVoltageStatus = "No Access - Input Volt Error";  break;
         default:        data->dischargingInputVoltageStatus = "???"; 
     }
+    
+    //                 1234567890123456
+    switch ((value & 0b0011000000000000) >> 12) {
+        case    0x00:   data->dischargingOutputPower = "Light Load";      break;
+        case    0x01:   data->dischargingOutputPower = "Moderate Load";        break;
+        case    0x02:   data->dischargingOutputPower = "Rated Load";       break;
+        case    0x03:   data->dischargingOutputPower = "Overload";  break;
+        default:        data->dischargingOutputPower = "???"; 
+    }
+    
+    //                                            5432109876543210
+    data->dischargingShortCircuit = ( (value &  0b0000100000000000) ? "SHORT" : "OK" );
+    data->unableToDischarge = ( (value &        0b0000010000000000) ? "Yes" : "No" );
+    data->unableToStopDischarging = ( (value &  0b0000001000000000) ? "Yes" : "No" );
+    data->outputVoltageAbnormal = ( (value &    0b0000000100000000) ? "Yes" : "No" );
+    data->inputOverpressure = ( (value &        0b0000000010000000) ? "Yes" : "No" );
+    //                                            5432109876543210
+    data->highVoltageSideShort = ( (value &     0b0000000001000000) ? "Yes" : "No" );
+    data->boostOverpressure = ( (value &        0b0000000000100000) ? "Yes" : "No" );
+    data->outputOverpressure = ( (value &       0b0000000000010000) ? "Yes" : "No" );
+    data->dischargingStatusNormal = ( (value &  0b0000000000000010) ? "Fault" : "Normal" );
+    data->dischargingStatusRunning = ( (value & 0b0000000000000001) ? "Running" : "Standby" );
     
 }
 

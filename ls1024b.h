@@ -33,6 +33,7 @@ typedef struct RatedData {
     float   batteryRatedCurrent;
     float   batteryRatedPower;
     char    *chargingMode;
+    float   ratedCurrentOfLoad;
 } RatedData_t;
 
 
@@ -48,7 +49,9 @@ typedef struct  RealTimeData {
     float   loadPower;
     float   batteryTemp;
     float   caseTemp;
-    float   componentsTemp ;
+    int     batterySOC;
+    float   remoteBatteryTemperature;
+    float   batteryRealRatedPower;
 } RealTimeData_t;
 
 typedef  struct  RealTimeStatus {
@@ -75,7 +78,17 @@ typedef  struct  RealTimeStatus {
     char    *chargingStatusRunning;
     
     char    *dischargingInputVoltageStatus;
-    
+    char    *dischargingOutputPower;
+    char    *dischargingShortCircuit;
+    char    *unableToDischarge;
+    char    *unableToStopDischarging;
+    char    *outputVoltageAbnormal;
+    char    *inputOverpressure;
+    char    *highVoltageSideShort;
+    char    *boostOverpressure;
+    char    *outputOverpressure;
+    char    *dischargingStatusNormal;
+    char    *dischargingStatusRunning;
 } RealTimeStatus_t;
 
 typedef struct  Settings {
@@ -89,6 +102,7 @@ typedef struct  Settings {
     float   boostVoltage;
     float   floatVoltage;
     float   boostReconnectVoltage;
+    float   lowVoltageReconnect;
 } Settings_t;
 
 typedef struct  StatisticalParameters {
@@ -104,10 +118,8 @@ typedef struct  StatisticalParameters {
     float   generatedEnergyMonth;
     float   generatedEnergyYear;
     float   totalGeneratedEnergy;
-    float   CO2Reduction;
     float   batteryCurrent;
-    float   batteryTemp;
-    float   ambientTemp;    
+    float   batteryVoltage;
 } StatisticalParameters_t;
 
 
@@ -134,8 +146,8 @@ void    clearEnergyGeneratingStatistics( modbus_t *ctx );
 int     getOverTemperatureInsideDevice( modbus_t *ctx );
 int     isNightTime( modbus_t *ctx );
 int     getBatteryStateOfCharge( modbus_t*ctx );
-float   getRemoteBatteryTemp( modbus_t *ctx );
-int     getBatteryRealRatedPower( modbus_t *ctx );
+float   getRemoteBatteryTemperature( modbus_t *ctx );
+float   getBatteryRealRatedPower( modbus_t *ctx );
 
 
 
