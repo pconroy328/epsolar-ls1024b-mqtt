@@ -796,7 +796,7 @@ int     setFloatSettingParameter (modbus_t *ctx, int registerAddress, float floa
     printf( "   setFloatSettingParameter() -- before setting the value, the read returned: %X\n", buffer[ 0 ] );
     
     memset( buffer, '\0', sizeof buffer );
-    buffer[ 0 ] = (uint16_t) (floatValue / 100.0);
+    buffer[ 0 ] = (uint16_t) (floatValue * 100.0);
     
     printf( "   setFloatSettingParameter() -- prepping write, buffer is: %X\n", buffer[ 0 ] );
     
