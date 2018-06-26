@@ -316,11 +316,33 @@ void    getRealtimeClock (modbus_t *ctx, int *seconds, int *minutes, int *hour, 
     *month = (buffer[ 2 ] & 0x00FF);
     *year = ((buffer[ 2 ] & 0xFF00) >> 8);
     
-    printf( "      buffer[0] = %X    secs = %d    mins = %d \n", buffer[0], *seconds, *minutes);
-    printf( "      buffer[1] = %X    hour = %d    day  = %d \n", buffer[1], *hour, *day);
-    printf( "      buffer[2] = %X    month= %d    year = %d \n", buffer[1], *month, *year);
+    //printf( "      buffer[0] = %X    secs = %d    mins = %d \n", buffer[0], *seconds, *minutes);
+    //printf( "      buffer[1] = %X    hour = %d    day  = %d \n", buffer[1], *hour, *day);
+    //printf( "      buffer[2] = %X    month= %d    year = %d \n", buffer[1], *month, *year);
 }
 
+// -----------------------------------------------------------------------------
+void    setRealtimeClock (modbus_t *ctx, const int seconds, const int minutes, const int hour, const int day, const int month, const int year)
+{
+    assert( seconds >= 0 && seconds <= 59 );
+    assert( minutes >= 0 && minutes <= 59 );
+    assert( hour >= 0 && hour <= 23 );
+    assert( day >= 1 && day <= 31 );
+    assert( month >= 1 && month <= 12 );
+    assert( year >= 1 && year <= 99 );
+    
+    int         registerAddress = 0x9013;
+    int         numBytes = 0x03;
+    uint16_t    buffer[ 32 ];
+    
+    memset( buffer, '\0', sizeof buffer );
+    buffer[ 0 ] = (minutes << 8) | seconds;
+    buffer[ 1 ] = (day << 8) | hour;
+    buffer[ 2 ] = (year << 8) | month;
+    
+    printf( "We're going to write this to the RTC:, %02d/%02d/%04d  %02d:%02d:%02d\n", day, month, year, hour, minutes, seconds );
+    printf( "Buffer is   %X   %X   %x\n", buffer[ 0 ], buffer[ 1 ], buffer[ 2 ] );
+}
 
 //------------------------------------------------------------------------------
 static
