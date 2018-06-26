@@ -52,8 +52,30 @@ typedef struct  RealTimeData {
 } RealTimeData_t;
 
 typedef  struct  RealTimeStatus {
-    int     batteryStatus;
-    int     chargingStatus;
+    int     batteryStatusValue;
+    int     chargingStatusValue;
+    int     dischargingStatusValue;
+
+    char    *batteryStatusVoltage;
+    char    *batteryStatusTemperature;
+    char    *batteryInnerResistance;
+    char    *batteryCorrectIdentification;
+    
+    char    *chargingInputVoltageStatus;
+    char    *chargingMOSFETShort;
+    char    *someMOSFETShort;
+    char    *antiReverseMOSFETShort;
+    char    *inputIsOverCurrent;
+    char    *loadIsOverCurrent;
+    char    *loadIsShort;
+    char    *loadMOSFETIsShort;
+    char    *pvInputIsShort;
+    char    *chargingStatus;
+    char    *chargingStatusNormal;
+    char    *chargingStatusRunning;
+    
+    char    *dischargingInputVoltageStatus;
+    
 } RealTimeStatus_t;
 
 typedef struct  Settings {
@@ -96,8 +118,36 @@ void    getRatedData( modbus_t *ctx, RatedData_t *data );
 void    getSettings( modbus_t *ctx, Settings_t *data );
 void    getRealTimeStatus( modbus_t *ctx, RealTimeStatus_t *data );
 void    getRealTimeData( modbus_t *ctx, RealTimeData_t *data );
+int     getChargingDeviceStatus( modbus_t *ctx);
+void    setChargingDeviceStatus( modbus_t *ctx, const int value);
+int     getOutputControlMode( modbus_t *ctx );
+void    setOutputControlMode( modbus_t *ctx, const int value );
+int     getManualLoadControlMode( modbus_t *ctx );
+void    setManualLoadControlMode( modbus_t *ctx, const int value );
+int     getDefaultLoadControlMode( modbus_t *ctx );
+void    setDefaultLoadControlMode( modbus_t *ctx, const int value );
+int     getEnableLoadTestMode( modbus_t *ctx );
+void    setEnableLoadTestMode( modbus_t *ctx, const int value );
+void    forceLoadOnOff( modbus_t *ctx, const int value );
+void    restoreSystemDefaults( modbus_t *ctx );
+void    clearEnergyGeneratingStatistics( modbus_t *ctx );
+int     getOverTemperatureInsideDevice( modbus_t *ctx );
+int     isNightTime( modbus_t *ctx );
+int     getBatteryStateOfCharge( modbus_t*ctx );
+float   getRemoteBatteryTemp( modbus_t *ctx );
+int     getBatteryRealRatedPower( modbus_t *ctx );
+
+
+
+
 static  char    *batteryTypeToString( uint16_t batteryType );
 static  char    *chargingModeToString( uint16_t mode );
+static  int     getCoilValue( modbus_t *ctx, const int coilNum, const char *description);
+static  void    setCoilValue( modbus_t *ctx, const int coilNum, int value, const char *description);
+static  float   C2F( float tempC );
+static  void    decodeBatteryStatusBits( RealTimeStatus_t *data, int value );
+static  void    decodeChargingStatusBits( RealTimeStatus_t *data, int value );
+static  void    decodeDischargingStatusBits( RealTimeStatus_t *data, int value );
 
 
 #ifdef __cplusplus

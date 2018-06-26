@@ -274,133 +274,56 @@ void    MQTT_PublishRealTimeStatus (const char *controllerID, const RealTimeStat
     
     char topic[1024];
     snprintf( topic, sizeof topic, "%s/%s", publishTopic, "REALTIMESTATUS" );
-
-
-    //
-    //  battery bits
-    //  D3-D0: 01H Overvolt , 00H Normal , 02H Under Volt, 03H Low Volt Disconnect, 04H Fault
-    //  D7-D4: 00H Normal, 01H Over Temp. (Higher than the warning settings), 02H Low Temp.(
-    //      Lower than the warning settings),
-    //  D8: Battery inerternal resistance abnormal 1, normal 0
-    //  D15: 1-Wrong identification for rated voltage
-    
-    int mask = 0x000F;
-    int bitValue = data->batteryStatus & mask;
-    char    *bStatus1 = "???";
-    
-    switch (bitValue) {
-        case    0x00:   bStatus1 = "Normal";    break;
-        case    0x01:   bStatus1 = "Over";  break;
-        case    0x02:   bStatus1 = "Under";  break;
-        case    0x03:   bStatus1 = "Low Voltage Disconnect";  break;
-        case    0x04:   bStatus1 = "Fault";  break;
-    }
-
-    mask = 0x00F0;
-    bitValue = data->batteryStatus & mask;
-    char    *bStatus2 = "???";
-    
-    switch (bitValue) {
-        case    0x00:   bStatus2 = "Normal";    break;
-        case    0x01:   bStatus2 = "High";  break;
-        case    0x02:   bStatus2 = "Low";  break;
-    }
-
-    mask = 0x0100;
-    bitValue = data->batteryStatus & mask;
-    char    *bStatus3 = "???";
-
-    switch (bitValue) {
-        case    0x00:   bStatus3 = "Normal";    break;
-        case    0x01:   bStatus3 = "Abnormal";  break;
-    }
-    
-    mask = 0x8000;
-    bitValue = data->batteryStatus & mask;
-    char    *bStatus4 = "???";
-    bStatus4 = (bitValue == 1 ? "Wrong" : "Correct");
-    
-    
-    /*
-     D15-D14: Input volt status. 00 normal, 01 no power connected, 02H Higher volt input, 03H Input volt error.
-D13: Charging MOSFET is short.
-D12: Charging or Anti-reverse MOSFET is short.
-D11: Anti-reverse MOSFET is short.
-D10: Input is over current.
-D9: The load is Over current.
-D8: The load is short.
-D7: Load MOSFET is short.
-D4: PV Input is short.
-D3-2: Charging status. 00 No charging,01 Float,02 Boost,03 Equlization.
-D1: 0 Normal, 1 Fault.
-D0: 1 Running, 0 Standby.*/
-    int ivMask          = 0b1100000000000000;
-    int mosfetMask      = 0b0010000000000000;
-    int carMosfetMask   = 0b0001000000000000;
-    int arMosfetMask    = 0b0000100000000000;
-    int iocMask         = 0b0000010000000000;
-    int locMask         = 0b0000001000000000;
-    int loadShortMask   = 0b0000000100000000;
-    int loadMosfetMask  = 0b0000000010000000;
-    
-    int pvInputMask     = 0b0000000000010000;
-    int cs3Mask         = 0b0000000000001100;
-    int cs2Mask         = 0b0000000000000010;
-    int cs1Mask         = 0b0000000000000001;
-
-    char    *iv = "???";
-    switch ((data->chargingStatus & ivMask) >> 14) {
-        case    0x00:   iv = "Normal";              break;
-        case    0x01:   iv = "No Power Connected";              break;
-        case    0x02:   iv = "Higher Volt Input";              break;
-        case    0x03:   iv = "Input Volt Error";              break;
-    }
-    
-    char    *cs = "???";
-    switch ((data->chargingStatus & cs3Mask) >> 2) {
-        case    0x00:   cs = "Not Charging";              break;
-        case    0x01:   cs = "Float(ing)";              break;
-        case    0x02:   cs = "Boost(ing)";              break;
-        case    0x03:   cs = "Equalizing";              break;
-    }
     
     int length = snprintf( message, sizeof message,
             "{ \"topic\":\"%s\", \"dateTime\":\"%s\", \
-\"batteryStatusHex\":%d, \
-\"chargingStatusHex\":%d, \
+\"batteryStatusValue\":%d, \
+\"chargingStatusValue\":%d, \
+\"dischargingStatusValue\":%d, \
 \"batteryVoltage\":\"%s\", \
 \"batteryTemp\":\"%s\", \
 \"batteryResistance\":\"%s\", \
 \"batteryIDType\":\"%s\", \
+"" \
 \"chargingInputVoltStatus\":\"%s\",\
 \"chargingMOSFETShort\":\"%s\",\
-\"chargingOrAntiReverseMOSFETShort\":\"%s\",\
+\"someMOSFETShort\":\"%s\",\
 \"antiReverseMOSFETShort\":\"%s\",\
+"" \
 \"inputOverCurrent\":\"%s\",\
 \"loadOverCurrent\":\"%s\",\
 \"loadShort\":\"%s\",\
 \"loadMOSFETShort\":\"%s\",\
 \"pvInputShort\":\"%s\",\
+"" \
 \"chargingStatus\":\"%s\",\
 \"chargingStatusFault\":\"%s\",\
 \"chargingStatusRunning\":\"%s\" }",
     
         topic, getCurrentDateTime(),
-        data->batteryStatus,
+        data->batteryStatusValue,
+        data->chargingStatusValue,
+        data->dischargingStatusValue,
+
+        data->batteryStatusVoltage,
+        data->batteryStatusTemperature,
+        data->batteryInnerResistance,
+        data->batteryCorrectIdentification,
+
+        data->chargingInputVoltageStatus,
+        data->chargingMOSFETShort,
+        data->someMOSFETShort,
+        data->antiReverseMOSFETShort,
+
+        data->inputIsOverCurrent,
+        data->loadIsOverCurrent,
+        data->loadIsShort,
+        data->loadMOSFETIsShort,
+        data->pvInputIsShort,
+            
         data->chargingStatus,
-        bStatus1, bStatus2, bStatus3, bStatus4,
-        iv,
-        ((data->chargingStatus & mosfetMask) ? "SHORT" : "OK" ),
-        ((data->chargingStatus & carMosfetMask) ? "SHORT" : "OK" ),
-        ((data->chargingStatus & arMosfetMask) ? "SHORT" : "OK" ),
-        ((data->chargingStatus & iocMask) ? "SHORT" : "OK"),
-        ((data->chargingStatus & locMask) ? "SHORT" : "OK" ),
-        ((data->chargingStatus & loadShortMask) ? "SHORT" : "OK"),
-        ((data->chargingStatus & loadMosfetMask) ? "SHORT" : "OK"),
-        ((data->chargingStatus & pvInputMask) ? "SHORT" : "OK"),
-        cs,
-        ((data->chargingStatus & cs2Mask) ? "Normal" : "Fault"),
-        ((data->chargingStatus & cs1Mask) ? "Standby" : "Running")
+        data->chargingStatusNormal,
+        data->chargingStatusRunning
     );
 
     printf( "Handformed JSON [%s]\n\n", message );
@@ -452,7 +375,7 @@ void    MQTT_PublishSettings (const char *controllerID, const Settings_t *data)
         data->overVoltageReconnect,
         data->tempCompensationCoeff );
 
-    printf( "Handformed JSON [%s]", message );
+    printf( "Handformed JSON [%s]\n\n", message );
     
     int result = mosquitto_publish( myMQTTInstance,
                         &messageID, 

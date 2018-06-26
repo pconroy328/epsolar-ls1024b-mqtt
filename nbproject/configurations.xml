@@ -48,9 +48,10 @@
         </cTool>
         <linkerTool>
           <linkerLibItems>
-            <linkerLibFileItem>/usr/lib/x86_64-linux-gnu/libmodbus.so</linkerLibFileItem>
-            <linkerLibFileItem>/usr/lib/x86_64-linux-gnu/libmosquitto.so</linkerLibFileItem>
             <linkerLibStdlibItem>Mathematics</linkerLibStdlibItem>
+            <linkerLibLibItem>modbus</linkerLibLibItem>
+            <linkerLibLibItem>mosquitto</linkerLibLibItem>
+            <linkerLibStdlibItem>PosixThreads</linkerLibStdlibItem>
           </linkerLibItems>
         </linkerTool>
       </compileType>
