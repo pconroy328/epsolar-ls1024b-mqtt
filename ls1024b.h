@@ -158,6 +158,7 @@ void    setRealtimeClockToNow( modbus_t *ctx );
 void    setBatteryType( modbus_t *ctx, int batteryTypeCode );
 void    setBatteryCapacity( modbus_t *ctx, int batteryCapacityAH );
 void    setHighVoltageDisconnect( modbus_t *ctx, float value );
+void    setLoadControlMode (modbus_t *ctx, int value);
 
 
 
