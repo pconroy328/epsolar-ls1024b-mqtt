@@ -395,6 +395,9 @@ void    MQTT_PublishSettings (const char *controllerID, const Settings_t *data)
 \"overVoltageReconnect\":%0.2f, \
 \"lowVoltageReconnect\":%0.2f, \
 \"underVoltageRecover\":%0.2f, \
+\"underVoltageWarning\":%0.2f, \
+\"lowVoltageDisconnect\":%0.2f, \
+\"dischargingLimitVoltage\":%0.2f, \
 \"tempCompensationCoeff\":%0.2f }",
     
         topic, getCurrentDateTime(),
@@ -409,6 +412,9 @@ void    MQTT_PublishSettings (const char *controllerID, const Settings_t *data)
         data->overVoltageReconnect,
         data->lowVoltageReconnect,
             data->underVoltageRecover,
+            data->underVoltageWarning,
+            data->lowVoltageDisconnect,
+            data->dischargingLimitVoltage,
         data->tempCompensationCoeff );
 
     printf( "Handformed JSON [%s]\n\n", message );

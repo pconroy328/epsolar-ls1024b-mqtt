@@ -104,6 +104,9 @@ typedef struct  Settings {
     float   boostReconnectVoltage;
     float   lowVoltageReconnect;
     float   underVoltageRecover;
+    float   underVoltageWarning;
+    float   lowVoltageDisconnect;
+    float   dischargingLimitVoltage;
 } Settings_t;
 
 typedef struct  StatisticalParameters {
