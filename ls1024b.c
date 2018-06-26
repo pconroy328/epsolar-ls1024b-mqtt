@@ -3,6 +3,7 @@
 #include <modbus/modbus.h>
 #include <string.h>
 #include <assert.h>
+#include <time.h>
 
 #include "ls1024b.h"
 #include "logger.h"
@@ -348,14 +349,12 @@ void    setRealtimeClock (modbus_t *ctx, const int seconds, const int minutes, c
     int mn = (buffer[ 2 ] & 0x00FF);
     int yr = ((buffer[ 2 ] & 0xFF00) >> 8);
     
-    if (se != seconds)        puts( "Error on seconds" );
-    if (mi != minutes)        puts( "Error on minutes" );
-    if (hr != hour)        puts( "Error on hour" );
-    if (dy != day)        puts( "Error on day" );
-    if (mn != month)        puts( "Error on month" );
-    if (yr != year)        puts( "Error on year" );
-
-    //  int modbus_write_registers(modbus_t *ctx, int addr, int nb, const uint16_t *src);
+    assert( se == seconds );
+    assert( mi == minutes );
+    assert( hr == hour );
+    assert( dy == day );
+    assert( mn == month );
+    assert( yr == year );
 
     int         registerAddress = 0x9013;
     int         numBytes = 0x03;
@@ -364,6 +363,24 @@ void    setRealtimeClock (modbus_t *ctx, const int seconds, const int minutes, c
         return;
     }
 
+}
+
+// -----------------------------------------------------------------------------
+void    setRealtimeClockToNow (modbus_t *ctx)
+{
+    struct tm   *timeInfo;
+    time_t      now;
+
+    time( &now );
+    timeInfo = localtime( &now );
+    int  seconds = timeInfo->tm_sec;
+    int  minutes = timeInfo->tm_min;
+    int  hour = timeInfo->tm_hour;
+    int  day = timeInfo->tm_mday;
+    int  month = timeInfo->tm_mon + 1;
+    int  year = timeInfo->tm_year % 100;
+    
+    setRealtimeClock( ctx, seconds, minutes, hour, day, month, year );
 }
 
 //------------------------------------------------------------------------------

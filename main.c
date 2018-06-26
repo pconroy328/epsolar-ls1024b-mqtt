@@ -96,14 +96,8 @@ int main (int argc, char* argv[])
             sleep( 1 );
             printf( "\n" );
         }
-        seconds = 57;
-        minutes = 14;
-        hour = 6;
-        day = 26;
-        month = 6;
-        year = 18;
         puts( "\nSetting Clock" );
-        setRealtimeClock( ctx, seconds, minutes, hour, day, month, year );
+        setRealtimeClockToNow( ctx );
         printf( "\n" );
         for (int i = 0; i < 10; i += 1) {
             getRealtimeClock( ctx, &seconds, &minutes, &hour, &day, &month, &year );
