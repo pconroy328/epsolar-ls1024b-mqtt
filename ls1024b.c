@@ -788,9 +788,9 @@ int     setFloatSettingParameter (modbus_t *ctx, int registerAddress, float floa
 
     memset( buffer, '\0', sizeof buffer );
     
+    modbus_set_debug( ctx, TRUE );
     if (modbus_read_registers( ctx, registerAddress, 0x01, buffer ) == -1) {
         fprintf(stderr, "modbus_read_registers() - Read failed: %s\n", modbus_strerror( errno ));
-        return FALSE;
     }
     
     printf( "   setFloatSettingParameter() -- before setting the value, the read returned: %X\n", buffer[ 0 ] );
@@ -808,8 +808,10 @@ int     setFloatSettingParameter (modbus_t *ctx, int registerAddress, float floa
     
     if (modbus_write_registers( ctx, registerAddress, 0x01, buffer ) == -1) {
         fprintf( stderr, "setFloatSettingParameter() - write of value %0.2f to register %X failed: %s\n", floatValue, registerAddress, modbus_strerror( errno ));
+        modbus_set_debug( ctx, FALSE );
         return FALSE;
     }    
     
+        modbus_set_debug( ctx, FALSE );
     return TRUE;
 }
