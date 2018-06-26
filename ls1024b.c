@@ -240,10 +240,6 @@ void    getSettings (modbus_t *ctx, Settings_t *data)
     data->underVoltageWarning     = ((float) buffer[ 0x0C ]) / 100.0;
     data->lowVoltageDisconnect    = ((float) buffer[ 0x0D ]) / 100.0;
     data->dischargingLimitVoltage = ((float) buffer[ 0x0E ]) / 100.0;
-    //uint16_t    realTimeClock1      = buffer[ 0x13 ];
-    //uint16_t    realTimeClock2      = buffer[ 0x14 ];
-    //uint16_t    realTimeClock3      = buffer[ 0x15 ];
-    //  There are more fields...
 }
 
 
@@ -298,6 +294,35 @@ float   getBatteryRealRatedPower (modbus_t *ctx)
     
     return ((float) buffer[ 0 ] / 100.0);
 }
+
+// -----------------------------------------------------------------------------
+void    getRealtimeClock (modbus_t *ctx)
+{
+    int         registerAddress = 0x9013;
+    int         numBytes = 0x01;
+    uint16_t    buffer[ 32 ];
+
+    memset( buffer, '\0', sizeof buffer );
+    
+    if (modbus_read_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
+        fprintf(stderr, "getRealtimeClock() - Read failed: %s\n", modbus_strerror( errno ));
+        return;
+    }
+    
+    printf( "      Real time clock read - one word: %0x  %d\n", buffer[ 0 ], buffer[ 0 ] );
+
+    registerAddress = 0x9014;
+    numBytes = 0x02;
+
+    memset( buffer, '\0', sizeof buffer );
+    
+    if (modbus_read_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
+        fprintf(stderr, "getRealtimeClock() - Read failed: %s\n", modbus_strerror( errno ));
+        return;
+    }
+    printf( "      Real time clock read - next two word: %0x  %d          %0x  %d\n", buffer[ 0 ], buffer[ 0 ],buffer[ 1 ], buffer[ 1 ] );
+}
+
 
 //------------------------------------------------------------------------------
 static

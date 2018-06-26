@@ -411,10 +411,10 @@ void    MQTT_PublishSettings (const char *controllerID, const Settings_t *data)
         data->highVoltageDisconnect,
         data->overVoltageReconnect,
         data->lowVoltageReconnect,
-            data->underVoltageRecover,
-            data->underVoltageWarning,
-            data->lowVoltageDisconnect,
-            data->dischargingLimitVoltage,
+        data->underVoltageRecover,
+        data->underVoltageWarning,
+        data->lowVoltageDisconnect,
+        data->dischargingLimitVoltage,
         data->tempCompensationCoeff );
 
     printf( "Handformed JSON [%s]\n\n", message );

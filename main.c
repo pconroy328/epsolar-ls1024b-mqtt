@@ -87,7 +87,9 @@ int main (int argc, char* argv[])
         printf( "Manual Load Control Mode is %s\n", (getManualLoadControlMode( ctx ) ? "Manual On" : "Manual Off") );
         printf( "Default Load Control Mode is %s\n", (getDefaultLoadControlMode( ctx ) ? "Manual On" : "Manual Off") );
         printf( "Enable Load Test Mode is %s\n", (getEnableLoadTestMode( ctx ) ? "Enabled" : "Disabled") );
-
+        
+        printf( "\n" );
+        getRealtimeClock( ctx );
         printf( "\n" );
         
         
