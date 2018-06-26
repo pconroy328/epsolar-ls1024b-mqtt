@@ -427,7 +427,7 @@ void    setHighVoltageDisconnect (modbus_t *ctx, float value)
 //------------------------------------------------------------------------------
 void    setLoadControlMode (modbus_t *ctx, int value)
 {
-    setFloatSettingParameter( ctx, 0x903D, value );
+    setIntSettingParameter( ctx, 0x903D, value );
 }
 
 //------------------------------------------------------------------------------

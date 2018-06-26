@@ -219,10 +219,8 @@ void    MQTT_PublishRealTimeData (const char *controllerID, const RealTimeData_t
     
     int length = snprintf( message, sizeof message,
             "{ \"topic\":\"%s\", \"dateTime\":\"%s\", \
-\"batteryCurrent\":%0.2f, \
 \"batteryPower\":%0.2f, \
 \"batteryTemp\":%0.1f, \
-\"batteryVoltage\":%0.2f, \
 \"batterySOC\":%0d, \
 \"batteryRealRatedPower\":%0.2f, \
 \"caseTemp\":%0.1f, \
@@ -234,10 +232,8 @@ void    MQTT_PublishRealTimeData (const char *controllerID, const RealTimeData_t
 \"pvArrayVoltage\":%0.2f } ",
     
         topic, getCurrentDateTime(),
-        data->batteryCurrent,
         data->batteryPower,
         data->batteryTemp,
-        data->batteryVoltage,
         data->batterySOC,
         data->batteryRealRatedPower,
         data->caseTemp,

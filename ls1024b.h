@@ -41,8 +41,6 @@ typedef struct  RealTimeData {
     float   pvArrayVoltage;
     float   pvArrayCurrent;
     float   pvArrayPower;
-    float   batteryVoltage;
-    float   batteryCurrent;
     float   batteryPower;
     float   loadVoltage;
     float   loadCurrent; 
@@ -166,12 +164,13 @@ void    setLoadControlMode (modbus_t *ctx, int value);
 static  char    *batteryTypeToString( uint16_t batteryType );
 static  char    *chargingModeToString( uint16_t mode );
 static  int     getCoilValue( modbus_t *ctx, const int coilNum, const char *description);
-static  void    setCoilValue( modbus_t *ctx, const int coilNum, int value, const char *description);
+static  void    setCoilValue( modbus_t *ctx, const int coilNum, const int value, const char *description);
 static  float   C2F( float tempC );
-static  void    decodeBatteryStatusBits( RealTimeStatus_t *data, int value );
-static  void    decodeChargingStatusBits( RealTimeStatus_t *data, int value );
-static  void    decodeDischargingStatusBits( RealTimeStatus_t *data, int value );
-static  int     setFloatSettingParameter( modbus_t *ctx, int registerAddress, float floatValue );
+static  void    decodeBatteryStatusBits( RealTimeStatus_t *data, const int value );
+static  void    decodeChargingStatusBits( RealTimeStatus_t *data, const int value );
+static  void    decodeDischargingStatusBits( RealTimeStatus_t *data, const int value );
+static  int     setFloatSettingParameter( modbus_t *ctx, const int registerAddress, const float floatValue );
+static  int     setIntSettingParameter( modbus_t *ctx, const int registerAddress, const int intValue );
 
 
 #ifdef __cplusplus
