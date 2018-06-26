@@ -103,6 +103,7 @@ typedef struct  Settings {
     float   floatVoltage;
     float   boostReconnectVoltage;
     float   lowVoltageReconnect;
+    float   underVoltageRecover;
 } Settings_t;
 
 typedef struct  StatisticalParameters {

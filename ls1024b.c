@@ -212,7 +212,7 @@ void    getStatisticalParameters (modbus_t *ctx, StatisticalParameters_t *data)
 void    getSettings (modbus_t *ctx, Settings_t *data)
 {
     int         registerAddress = 0x9000;
-    int         numBytes = 0x0A;                    // 0x10 and up gives 'illegal data address' error
+    int         numBytes = 0x0B;                    // 0x10 and up gives 'illegal data address' error
     uint16_t    buffer[ 32 ];
 
     memset( buffer, '\0', sizeof buffer );
@@ -236,7 +236,7 @@ void    getSettings (modbus_t *ctx, Settings_t *data)
 
     //  Our LS1024B controller doesn't seem to support any register data above 0x0A
     data->lowVoltageReconnect     = ((float) buffer[ 0x0A ]) / 100.0;
-    //float   underVoltageRecover     = ((float) buffer[ 0x0B ]) / 100.0;
+    data->underVoltageRecover     = ((float) buffer[ 0x0B ]) / 100.0;
     //float   underVoltageWarning     = ((float) buffer[ 0x0C ]) / 100.0;
     //float   lowVoltageDisconnect    = ((float) buffer[ 0x0D ]) / 100.0;
     //float   dischargingLimitVoltage = ((float) buffer[ 0x0E ]) / 100.0;
