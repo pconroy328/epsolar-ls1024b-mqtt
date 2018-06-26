@@ -342,6 +342,21 @@ void    setRealtimeClock (modbus_t *ctx, const int seconds, const int minutes, c
     
     printf( "We're going to write this to the RTC:, %02d/%02d/%04d  %02d:%02d:%02d\n", day, month, year, hour, minutes, seconds );
     printf( "Buffer is   %X   %X   %x\n", buffer[ 0 ], buffer[ 1 ], buffer[ 2 ] );
+
+    int se = (buffer[ 0 ] & 0x00FF);
+    int mi = ((buffer[ 0 ] & 0xFF00) >> 8);
+    int hr = (buffer[ 1 ] & 0x00FF);
+    int dy = ((buffer[ 1 ] & 0xFF00) >> 8);
+    int mn = (buffer[ 2 ] & 0x00FF);
+    int yr = ((buffer[ 2 ] & 0xFF00) >> 8);
+    
+    if (se != seconds)        puts( "Error on seconds" );
+    if (mi != minutes)        puts( "Error on minutes" );
+    if (hr != hour)        puts( "Error on hour" );
+    if (dy != day)        puts( "Error on day" );
+    if (mn != month)        puts( "Error on month" );
+    if (yr != year)        puts( "Error on year" );
+
 }
 
 //------------------------------------------------------------------------------
