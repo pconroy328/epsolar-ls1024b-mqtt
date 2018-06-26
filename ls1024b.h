@@ -155,6 +155,9 @@ float   getBatteryRealRatedPower( modbus_t *ctx );
 void    getRealtimeClock( modbus_t *ctx, int *seconds, int *minutes, int *hour, int *day, int *month, int *year );
 void    setRealtimeClock( modbus_t *ctx, const int seconds, const int minutes, const int hour, const int day, const int month, const int year );
 void    setRealtimeClockToNow( modbus_t *ctx );
+void    setBatteryType( modbus_t *ctx, int batteryTypeCode );
+void    setBatteryCapacity( modbus_t *ctx, int batteryCapacityAH );
+void    setHighVoltageDisconnect( modbus_t *ctx, float value );
 
 
 
@@ -167,6 +170,7 @@ static  float   C2F( float tempC );
 static  void    decodeBatteryStatusBits( RealTimeStatus_t *data, int value );
 static  void    decodeChargingStatusBits( RealTimeStatus_t *data, int value );
 static  void    decodeDischargingStatusBits( RealTimeStatus_t *data, int value );
+static  int     setFloatSettingParameter( modbus_t *ctx, int registerAddress, float floatValue );
 
 
 #ifdef __cplusplus

@@ -88,23 +88,15 @@ int main (int argc, char* argv[])
         printf( "Default Load Control Mode is %s\n", (getDefaultLoadControlMode( ctx ) ? "Manual On" : "Manual Off") );
         printf( "Enable Load Test Mode is %s\n", (getEnableLoadTestMode( ctx ) ? "Enabled" : "Disabled") );
         
-        printf( "\n" );
-        int seconds, minutes, hour, day, month, year;
-        for (int i = 0; i < 10; i += 1) {
-            getRealtimeClock( ctx, &seconds, &minutes, &hour, &day, &month, &year );
-            printf( "System Clock set to: %02d/%02d/%04d  %02d:%02d:%02d\n", day, month, year, hour, minutes, seconds );
-            sleep( 1 );
-            printf( "\n" );
-        }
         puts( "\nSetting Clock" );
         setRealtimeClockToNow( ctx );
-        printf( "\n" );
-        for (int i = 0; i < 10; i += 1) {
-            getRealtimeClock( ctx, &seconds, &minutes, &hour, &day, &month, &year );
-            printf( "System Clock set to: %02d/%02d/%04d  %02d:%02d:%02d\n", day, month, year, hour, minutes, seconds );
-            sleep( 1 );
-            printf( "\n" );
-        }
+        int seconds, minutes, hour, day, month, year;
+        getRealtimeClock( ctx, &seconds, &minutes, &hour, &day, &month, &year );
+        printf( "System Clock set to: %02d/%02d/%02d  %02d:%02d:%02d\n", day, month, year, hour, minutes, seconds );
+
+        setBatteryCapacity( ctx, 5 );
+        setBatteryType( ctx, 1 );
+        setHighVoltageDisconnect( ctx, 15.5 );
         
         
         //

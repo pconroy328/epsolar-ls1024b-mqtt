@@ -362,7 +362,6 @@ void    setRealtimeClock (modbus_t *ctx, const int seconds, const int minutes, c
         fprintf(stderr, "setRealTimeClock() - write failed: %s\n", modbus_strerror( errno ));
         return;
     }
-
 }
 
 // -----------------------------------------------------------------------------
@@ -384,6 +383,48 @@ void    setRealtimeClockToNow (modbus_t *ctx)
 }
 
 //------------------------------------------------------------------------------
+void    setBatteryType ( modbus_t *ctx, int batteryTypeCode)
+{
+    assert( batteryTypeCode >= 0x00 && batteryTypeCode <= 0x03 );
+
+    uint16_t    buffer[ 2 ];
+   
+    memset( buffer, '\0', sizeof buffer );
+    buffer[ 0 ] = batteryTypeCode;
+    
+    int         registerAddress = 0x9000;
+    int         numBytes = 0x01;
+    if (modbus_write_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
+        fprintf(stderr, "setBatteryType() - write failed: %s\n", modbus_strerror( errno ));
+        return;
+    }
+}
+
+//------------------------------------------------------------------------------
+void    setBatteryCapacity (modbus_t *ctx, int batteryCapacityAH)
+{
+    assert( batteryCapacityAH >= 0x00 );
+
+    uint16_t    buffer[ 2 ];
+   
+    memset( buffer, '\0', sizeof buffer );
+    buffer[ 0 ] = batteryCapacityAH;
+    
+    int         registerAddress = 0x9001;
+    int         numBytes = 0x01;
+    if (modbus_write_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
+        fprintf(stderr, "setBatteryCapacity() - write failed: %s\n", modbus_strerror( errno ));
+        return;
+    }    
+}
+
+//------------------------------------------------------------------------------
+void    setHighVoltageDisconnect (modbus_t *ctx, float value)
+{
+    setFloatSettingParameter( ctx, 0x9003, value );
+}
+
+//------------------------------------------------------------------------------
 static
 char    *batteryTypeToString (uint16_t batteryType)
 {
@@ -397,22 +438,6 @@ char    *batteryTypeToString (uint16_t batteryType)
     }
 }
 
-//------------------------------------------------------------------------------
-static
-char    *chargingModeToString (uint16_t mode)
-{
-    switch (mode) {
-        case    0x01:   return "PWM";        break;
-        default:        return "Unknown";
-    }
-}
-
-// -----------------------------------------------------------------------------
-int     setBatteryTypeAndCapacity (const int batteryType, const int batteryCapacity)
-{
-    // not sure what asserts() range checking to do
-    assert( batteryType >= 0x00 && batteryType <= 0x03 );
-}
 
 // -----------------------------------------------------------------------------
 int getChargingDeviceStatus (modbus_t *ctx)
@@ -573,6 +598,15 @@ int isNightTime (modbus_t *ctx)
     return ( (value & 0b00000001) == 1 );    
 }
 
+//------------------------------------------------------------------------------
+static
+char    *chargingModeToString (uint16_t mode)
+{
+    switch (mode) {
+        case    0x01:   return "PWM";        break;
+        default:        return "Unknown";
+    }
+}
 
 // -----------------------------------------------------------------------------
 static
@@ -743,4 +777,21 @@ float   C2F (float tempC)
 {
     // T(°F) = T(°C) × 9/5 + 32
     return ((tempC * 9.0 / 5.0) + 32.0);
+}
+
+// -----------------------------------------------------------------------------
+static
+int     setFloatSettingParameter (modbus_t *ctx, int registerAddress, float floatValue)
+{
+    uint16_t    buffer[ 2 ];
+   
+    memset( buffer, '\0', sizeof buffer );
+    buffer[ 0 ] = (uint16_t) (floatValue / 100.0);
+    
+    if (modbus_write_registers( ctx, registerAddress, 0x01, buffer ) == -1) {
+        fprintf(stderr, "setFloatSettingParameter() - write of value %0.2f to register %X failed: %s\n", floatValue, registerAddress, modbus_strerror( errno ));
+        return FALSE;
+    }    
+    
+    return TRUE;
 }
