@@ -173,6 +173,7 @@ void    MQTT_PublishRatedData (const char *controllerID, const RatedData_t *data
 \"pvArrayCurrent\":%0.2f, \
 \"pvArrayPower\":%0.2f, \
 \"pvArrayVoltage\":%0.2f, \
+\"ratedCurrentOfLoad\":%0.2f, \
 \"chargingMode\": \"%s\" } ",
     
         topic, getCurrentDateTime(),
@@ -183,6 +184,7 @@ void    MQTT_PublishRatedData (const char *controllerID, const RatedData_t *data
         data->pvArrayRatedCurrent,
         data->pvArrayRatedPower,
         data->pvArrayRatedVoltage,
+        data->ratedCurrentOfLoad,
         data->chargingMode );
 
     printf( "Handformed JSON [%s]\n\n", message );
@@ -221,6 +223,8 @@ void    MQTT_PublishRealTimeData (const char *controllerID, const RealTimeData_t
 \"batteryPower\":%0.2f, \
 \"batteryTemp\":%0.1f, \
 \"batteryVoltage\":%0.2f, \
+\"batterySOC\":%0d, \
+\"batteryRealRatedPower\":%0.2f, \
 \"caseTemp\":%0.1f, \
 \"loadCurrent\":%0.2f, \
 \"loadPower\":%0.2f, \
@@ -234,6 +238,8 @@ void    MQTT_PublishRealTimeData (const char *controllerID, const RealTimeData_t
         data->batteryPower,
         data->batteryTemp,
         data->batteryVoltage,
+        data->batterySOC,
+        data->batteryRealRatedPower,
         data->caseTemp,
         data->loadCurrent,
         data->loadPower,
@@ -387,6 +393,7 @@ void    MQTT_PublishSettings (const char *controllerID, const Settings_t *data)
 \"floatVoltage\":%0.2f, \
 \"highVoltageDisconnect\":%0.2f, \
 \"overVoltageReconnect\":%0.2f, \
+\"lowVoltageReconnect\":%0.2f, \
 \"tempCompensationCoeff\":%0.2f }",
     
         topic, getCurrentDateTime(),
@@ -399,6 +406,7 @@ void    MQTT_PublishSettings (const char *controllerID, const Settings_t *data)
         data->floatVoltage,
         data->highVoltageDisconnect,
         data->overVoltageReconnect,
+        data->lowVoltageReconnect,
         data->tempCompensationCoeff );
 
     printf( "Handformed JSON [%s]\n\n", message );

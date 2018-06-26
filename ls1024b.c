@@ -278,7 +278,7 @@ float   getRemoteBatteryTemperature (modbus_t *ctx)
         fprintf(stderr, "getRemoteBatteryTemp() - Read failed: %s\n", modbus_strerror( errno ));
         return -1;
     }
-    printf( "       remote battery temp sent back: %0x (hex)  %d\n", buffer[ 0 ], buffer[ 0 ] );
+    //printf( "       remote battery temp sent back: %0x (hex)  %d\n", buffer[ 0 ], buffer[ 0 ] );
     return C2F( (float) buffer[ 0 ] / 100.0 );
 }
 
