@@ -316,9 +316,9 @@ void    getRealtimeClock (modbus_t *ctx, int *seconds, int *minutes, int *hour, 
     *month = (buffer[ 2 ] & 0x00FF);
     *year = ((buffer[ 2 ] & 0xFF00) >> 8);
     
-    printf( "      buffer[0] = %X    secs = %d    mins = %d  shifted = %d\n", buffer[0], buffer[0]&0x00FF, (buffer[0]&0xFF00), *minutes);
-    printf( "      buffer[1] = %X    hour = %d    day  = %d  day = %d\n", buffer[1], buffer[1]&0x00FF, (buffer[1]&0xFF00), *day);
-    printf( "      buffer[2] = %X    month= %d    year = %d  year = %d\n", buffer[1], buffer[2]&0x00FF, (buffer[2]&0xFF00), *year);
+    printf( "      buffer[0] = %X    secs = %d    mins = %d \n", buffer[0], *seconds, *minutes);
+    printf( "      buffer[1] = %X    hour = %d    day  = %d \n", buffer[1], *hour, *day);
+    printf( "      buffer[2] = %X    month= %d    year = %d \n", buffer[1], *month, *year);
 }
 
 
