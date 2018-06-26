@@ -794,6 +794,12 @@ int     setFloatSettingParameter (modbus_t *ctx, int registerAddress, float floa
     }
     
     printf( "   setFloatSettingParameter() -- before setting the value, the read returned: %X\n", buffer[ 0 ] );
+    printf( "   Looking for 16.0 --  %s, %0.2f\n", "modbus_get_float", modbus_get_float( buffer ) );
+    //printf( "   Looking for 16.0 --  %s, %0.2f\n", "modbus_get_float_abcd", modbus_get_float_abcd( buffer[ 0 ] ) );
+    //printf( "   Looking for 16.0 --  %s, %0.2f\n", "modbus_get_float_badc", modbus_get_float_badc( buffer[ 0 ] ) );
+    //printf( "   Looking for 16.0 --  %s, %0.2f\n", "modbus_get_float_badc", modbus_get_float_cdab( buffer[ 0 ] ) );
+    //printf( "   Looking for 16.0 --  %s, %0.2f\n", "modbus_get_float_badc", modbus_get_float_dcba( buffer[ 0 ] ) );
+
     
     memset( buffer, '\0', sizeof buffer );
     buffer[ 0 ] = (uint16_t) (floatValue * 100.0);
@@ -801,7 +807,7 @@ int     setFloatSettingParameter (modbus_t *ctx, int registerAddress, float floa
     printf( "   setFloatSettingParameter() -- prepping write, buffer is: %X\n", buffer[ 0 ] );
     
     if (modbus_write_registers( ctx, registerAddress, 0x01, buffer ) == -1) {
-        fprintf(stderr, "setFloatSettingParameter() - write of value %0.2f to register %X failed: %s\n", floatValue, registerAddress, modbus_strerror( errno ));
+        fprintf( stderr, "setFloatSettingParameter() - write of value %0.2f to register %X failed: %s\n", floatValue, registerAddress, modbus_strerror( errno ));
         return FALSE;
     }    
     
