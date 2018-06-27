@@ -78,26 +78,28 @@ int main (int argc, char* argv[])
     RealTimeStatus_t        realTimeStatusData;
     Settings_t              settingsData;
     StatisticalParameters_t statisticalParametersData;
+
+    puts( "\nSetting Clock" );
+    setRealtimeClockToNow( ctx );
+    int seconds, minutes, hour, day, month, year;
+    getRealtimeClock( ctx, &seconds, &minutes, &hour, &day, &month, &year );
+    printf( "System Clock set to: %02d/%02d/%02d %02d:%02d:%02d\n", month, day, year, hour, minutes, seconds );
+
+    puts( "Setting battery capacity to 5AH, type to '1' and loadControlMode to 0x00" );
+    setBatteryCapacity( ctx, 5 );
+    setBatteryType( ctx, 1 );
+    setLoadControlMode( ctx, 0x00 );
+
+    printf( "Night/Day check - it is %s\n", (isNightTime( ctx ) ? "Nighttime" : "Daytime" ) );
+    printf( "Are we above the case temperature threshold: %s\n", getOverTemperatureInsideDevice( ctx ) ? "Yes" : "No" );
+    printf( "Charging Device Status Control is %s\n", (getChargingDeviceStatus( ctx ) ? "On" : "Off") );
+    printf( "Output Control Mode is %s\n", (getOutputControlMode( ctx ) ? "Manual" : "Automatic") );
+    printf( "Manual Load Control Mode is %s\n", (getManualLoadControlMode( ctx ) ? "Manual On" : "Manual Off") );
+    printf( "Default Load Control Mode is %s\n", (getDefaultLoadControlMode( ctx ) ? "Manual On" : "Manual Off") );
+    printf( "Enable Load Test Mode is %s\n", (getEnableLoadTestMode( ctx ) ? "Enabled" : "Disabled") );
+
     
     while (1) {
-        printf( "Night/Day check - it is %s\n", (isNightTime( ctx ) ? "Nighttime" : "Daytime" ) );
-        printf( "Are we above the case temperature threshold: %s\n", getOverTemperatureInsideDevice( ctx ) ? "Yes" : "No" );
-        printf( "Charging Device Status Control is %s\n", (getChargingDeviceStatus( ctx ) ? "On" : "Off") );
-        printf( "Output Control Mode is %s\n", (getOutputControlMode( ctx ) ? "Manual" : "Automatic") );
-        printf( "Manual Load Control Mode is %s\n", (getManualLoadControlMode( ctx ) ? "Manual On" : "Manual Off") );
-        printf( "Default Load Control Mode is %s\n", (getDefaultLoadControlMode( ctx ) ? "Manual On" : "Manual Off") );
-        printf( "Enable Load Test Mode is %s\n", (getEnableLoadTestMode( ctx ) ? "Enabled" : "Disabled") );
-        
-        puts( "\nSetting Clock" );
-        setRealtimeClockToNow( ctx );
-        int seconds, minutes, hour, day, month, year;
-        getRealtimeClock( ctx, &seconds, &minutes, &hour, &day, &month, &year );
-        printf( "System Clock set to: %02d/%02d/%02d  %02d:%02d:%02d\n", day, month, year, hour, minutes, seconds );
-
-        setBatteryCapacity( ctx, 5 );
-        setBatteryType( ctx, 1 );
-        setLoadControlMode( ctx, 0x00 );
-
         
         //
         //  every time thru the loop - zero out the structs!
