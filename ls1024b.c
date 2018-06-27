@@ -375,7 +375,7 @@ char    *getRealtimeClockStr (modbus_t *ctx, char *buffer, const int buffSize)
     int seconds, minutes, hour, day, month, year;
 
     getRealtimeClock( ctx, &seconds, &minutes, &hour, &day, &month, &year );
-    snprintf( buffer, buffSize, "%02d/%02d/%02d  %02d:%02d:%02d\n", day, month, year, hour, minutes, seconds );
+    snprintf( buffer, buffSize, "%02d/%02d/%02d %02d:%02d:%02d", month, day, year, hour, minutes, seconds );
     return buffer;
 }
 
@@ -473,12 +473,6 @@ void    setBatteryCapacity (modbus_t *ctx, int batteryCapacityAH)
         fprintf(stderr, "setBatteryCapacity() - write failed: %s\n", modbus_strerror( errno ));
         return;
     }    
-}
-
-//------------------------------------------------------------------------------
-void    setHighVoltageDisconnect (modbus_t *ctx, float value)
-{
-    setFloatSettingParameter( ctx, 0x9003, value );
 }
 
 //------------------------------------------------------------------------------
@@ -847,35 +841,15 @@ static
 int     setFloatSettingParameter (modbus_t *ctx, int registerAddress, float floatValue)
 {
     uint16_t    buffer[ 2 ];
-
-
-    memset( buffer, '\0', sizeof buffer );
-    
-    modbus_set_debug( ctx, TRUE );
-    if (modbus_read_registers( ctx, registerAddress, 0x01, buffer ) == -1) {
-        fprintf(stderr, "modbus_read_registers() - Read failed: %s\n", modbus_strerror( errno ));
-    }
-    
-    // printf( "   setFloatSettingParameter() -- using modbus version %s\n", LIBMODBUS_VERSION_STRING );
-    // printf( "   setFloatSettingParameter() -- before setting the value, the read returned: %X\n", buffer[ 0 ] );
-    //printf( "   Looking for 16.0 --  %s, %0.2f\n", "modbus_get_float_abcd", modbus_get_float_abcd( buffer[ 0 ] ) );
-    //printf( "   Looking for 16.0 --  %s, %0.2f\n", "modbus_get_float_badc", modbus_get_float_badc( buffer[ 0 ] ) );
-    //printf( "   Looking for 16.0 --  %s, %0.2f\n", "modbus_get_float_badc", modbus_get_float_cdab( buffer[ 0 ] ) );
-    //printf( "   Looking for 16.0 --  %s, %0.2f\n", "modbus_get_float_badc", modbus_get_float_dcba( buffer[ 0 ] ) );
-
-    
+   
     memset( buffer, '\0', sizeof buffer );
     buffer[ 0 ] = (uint16_t) (floatValue * 100.0);
-    
-    printf( "   setFloatSettingParameter() -- prepping write, buffer is: %X\n", buffer[ 0 ] );
-    
+        
     if (modbus_write_registers( ctx, registerAddress, 0x01, buffer ) == -1) {
         fprintf( stderr, "setFloatSettingParameter() - write of value %0.2f to register %X failed: %s\n", floatValue, registerAddress, modbus_strerror( errno ));
-        modbus_set_debug( ctx, FALSE );
         return FALSE;
     }    
     
-        modbus_set_debug( ctx, FALSE );
     return TRUE;
 }
 
@@ -885,29 +859,13 @@ int     setIntSettingParameter (modbus_t *ctx, int registerAddress, int intValue
 {
     uint16_t    buffer[ 2 ];
 
-
-    memset( buffer, '\0', sizeof buffer );
-    
-    modbus_set_debug( ctx, TRUE );
-    if (modbus_read_registers( ctx, registerAddress, 0x01, buffer ) == -1) {
-        fprintf(stderr, "modbus_read_registers() - Read failed: %s\n", modbus_strerror( errno ));
-    }
-    
-    printf( "   setIntSettingParameter() -- using modbus version %s\n", LIBMODBUS_VERSION_STRING );
-    printf( "   setIntSettingParameter() -- before setting the value, the read returned: %X\n", buffer[ 0 ] );
-
-    
     memset( buffer, '\0', sizeof buffer );
     buffer[ 0 ] = (uint16_t) intValue;
-    
-    printf( "   setIntSettingParameter() -- prepping write, buffer is: %X\n", buffer[ 0 ] );
-    
+       
     if (modbus_write_registers( ctx, registerAddress, 0x01, buffer ) == -1) {
         fprintf( stderr, "setIntSettingParameter() - write of value %d to register %X failed: %s\n", intValue, registerAddress, modbus_strerror( errno ));
-        modbus_set_debug( ctx, FALSE );
         return FALSE;
     }    
     
-    modbus_set_debug( ctx, FALSE );
     return TRUE;
 }
