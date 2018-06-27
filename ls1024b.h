@@ -105,6 +105,18 @@ typedef struct  Settings {
     float   underVoltageWarning;
     float   lowVoltageDisconnect;
     float   dischargingLimitVoltage;
+    char    *realtimeClock;
+    float   batteryTempWarningUpperLimit;
+    float   batteryTempWarningLowerLimit;
+    float   controllerTempWarningUpperLimit;
+    float   controllerTempWarningLowerLimit;
+    float   daytimeThresholdVoltage;
+    int     lightSignalStartupTime;
+    float   lighttimeThresholdVoltage;
+    int     lightSignalCloseDelayTime;
+    int     localControllingModes;
+    int     workingTimeLength1;
+    int     workingTimeLength2;
 } Settings_t;
 
 typedef struct  StatisticalParameters {
@@ -157,6 +169,8 @@ void    setBatteryType( modbus_t *ctx, int batteryTypeCode );
 void    setBatteryCapacity( modbus_t *ctx, int batteryCapacityAH );
 void    setHighVoltageDisconnect( modbus_t *ctx, float value );
 void    setLoadControlMode (modbus_t *ctx, int value);
+char    *getRealtimeClockStr (modbus_t *ctx, char *buffer, const int buffSize);
+
 
 
 

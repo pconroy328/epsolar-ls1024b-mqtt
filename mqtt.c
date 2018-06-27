@@ -394,6 +394,18 @@ void    MQTT_PublishSettings (const char *controllerID, const Settings_t *data)
 \"underVoltageWarning\":%0.2f, \
 \"lowVoltageDisconnect\":%0.2f, \
 \"dischargingLimitVoltage\":%0.2f, \
+\"realtimeClock\":\"%s\", \
+\"batteryTempWarningUpperLimit\":%0.2f, \
+\"batteryTempWarningLowerLimit\":%0.2f, \
+\"controllerTempWarningUpperLimit\":%0.2f, \
+\"controllerTempWarningLowerLimit\":%0.2f, \
+\"daytimeThresholdVoltage\":%0.2f, \
+\"lightSignalStartupTime\":%d, \
+\"lighttimeThresholdVoltage\":%0.2f, \
+\"lightSignalCloseDelayTime\":%d, \
+\"localControllingModes\":%d, \
+\"workingTimeLength1\":%d, \
+\"workingTimeLength2\":%d, \
 \"tempCompensationCoeff\":%0.2f }",
     
         topic, getCurrentDateTime(),
@@ -411,6 +423,20 @@ void    MQTT_PublishSettings (const char *controllerID, const Settings_t *data)
         data->underVoltageWarning,
         data->lowVoltageDisconnect,
         data->dischargingLimitVoltage,
+
+        data->realtimeClock,
+        data->batteryTempWarningUpperLimit,
+        data->batteryTempWarningLowerLimit,
+        data->controllerTempWarningUpperLimit,
+        data->controllerTempWarningLowerLimit,
+        data->daytimeThresholdVoltage,
+        data->lightSignalStartupTime,
+        data->lighttimeThresholdVoltage,
+        data->lightSignalCloseDelayTime,
+        data->localControllingModes,
+        data->workingTimeLength1,
+        data->workingTimeLength2,
+            
         data->tempCompensationCoeff );
 
     printf( "Handformed JSON [%s]\n\n", message );

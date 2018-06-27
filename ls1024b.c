@@ -8,6 +8,8 @@
 #include "ls1024b.h"
 #include "logger.h"
 
+static    char    rtc[ 40 ];
+
 
 // -----------------------------------------------------------------------------
 void    getRatedData (modbus_t *ctx, RatedData_t *data)
@@ -241,6 +243,51 @@ void    getSettings (modbus_t *ctx, Settings_t *data)
     data->underVoltageWarning     = ((float) buffer[ 0x0C ]) / 100.0;
     data->lowVoltageDisconnect    = ((float) buffer[ 0x0D ]) / 100.0;
     data->dischargingLimitVoltage = ((float) buffer[ 0x0E ]) / 100.0;
+    
+    memset( rtc, '\0', sizeof rtc );
+    data->realtimeClock = getRealtimeClockStr( ctx, rtc, sizeof rtc );
+    
+    
+    
+    registerAddress = 0x9017;
+    numBytes = 4;
+    memset( buffer, '\0', sizeof buffer );
+    if (modbus_read_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
+        fprintf(stderr, "getSettings() - Read of 4 starting at 0x9017 failed: %s\n", modbus_strerror( errno ));
+        return;
+    }
+    data->batteryTempWarningUpperLimit = ((float) buffer[ 0x00 ]) / 100.0;
+    data->batteryTempWarningLowerLimit = ((float) buffer[ 0x01 ]) / 100.0;
+    data->controllerTempWarningUpperLimit = ((float) buffer[ 0x02 ]) / 100.0;
+    data->controllerTempWarningLowerLimit = ((float) buffer[ 0x03 ]) / 100.0;
+
+    
+    
+    registerAddress = 0x901E;
+    numBytes = 4;
+    memset( buffer, '\0', sizeof buffer );
+    if (modbus_read_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
+        fprintf(stderr, "getSettings() - Read of 4 starting at 0x901E failed: %s\n", modbus_strerror( errno ));
+        return;
+    }
+    
+    data->daytimeThresholdVoltage    = ((float) buffer[ 0x00 ]) / 100.0;
+    data->lightSignalStartupTime     = buffer[ 0x01 ];
+    data->lighttimeThresholdVoltage  = ((float) buffer[ 0x02 ]) / 100.0;
+    data->lightSignalCloseDelayTime  = buffer[ 0x03 ];
+
+
+    registerAddress = 0x903D;
+    numBytes = 3;
+    memset( buffer, '\0', sizeof buffer );
+    if (modbus_read_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
+        fprintf(stderr, "getSettings() - Read of 3 starting at 0x903D failed: %s\n", modbus_strerror( errno ));
+        return;
+    }
+    
+    data->localControllingModes = buffer[ 0x00 ];
+    data->workingTimeLength1    = buffer[ 0x01 ];
+    data->workingTimeLength2    = buffer[ 0x02 ];
 }
 
 
@@ -320,6 +367,16 @@ void    getRealtimeClock (modbus_t *ctx, int *seconds, int *minutes, int *hour, 
     //printf( "      buffer[0] = %X    secs = %d    mins = %d \n", buffer[0], *seconds, *minutes);
     //printf( "      buffer[1] = %X    hour = %d    day  = %d \n", buffer[1], *hour, *day);
     //printf( "      buffer[2] = %X    month= %d    year = %d \n", buffer[1], *month, *year);
+}
+
+// -----------------------------------------------------------------------------
+char    *getRealtimeClockStr (modbus_t *ctx, char *buffer, const int buffSize)
+{
+    int seconds, minutes, hour, day, month, year;
+
+    getRealtimeClock( ctx, &seconds, &minutes, &hour, &day, &month, &year );
+    snprintf( buffer, buffSize, "%02d/%02d/%02d  %02d:%02d:%02d\n", day, month, year, hour, minutes, seconds );
+    return buffer;
 }
 
 // -----------------------------------------------------------------------------
@@ -799,8 +856,8 @@ int     setFloatSettingParameter (modbus_t *ctx, int registerAddress, float floa
         fprintf(stderr, "modbus_read_registers() - Read failed: %s\n", modbus_strerror( errno ));
     }
     
-    printf( "   setFloatSettingParameter() -- using modbus version %s\n", LIBMODBUS_VERSION_STRING );
-    printf( "   setFloatSettingParameter() -- before setting the value, the read returned: %X\n", buffer[ 0 ] );
+    // printf( "   setFloatSettingParameter() -- using modbus version %s\n", LIBMODBUS_VERSION_STRING );
+    // printf( "   setFloatSettingParameter() -- before setting the value, the read returned: %X\n", buffer[ 0 ] );
     //printf( "   Looking for 16.0 --  %s, %0.2f\n", "modbus_get_float_abcd", modbus_get_float_abcd( buffer[ 0 ] ) );
     //printf( "   Looking for 16.0 --  %s, %0.2f\n", "modbus_get_float_badc", modbus_get_float_badc( buffer[ 0 ] ) );
     //printf( "   Looking for 16.0 --  %s, %0.2f\n", "modbus_get_float_badc", modbus_get_float_cdab( buffer[ 0 ] ) );
