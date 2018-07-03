@@ -359,7 +359,9 @@ static unsigned char *print_number(const cJSON *item, printbuffer *p)
             }
             else
             {
-                sprintf((char*)str, "%f", d);
+                //
+                //  PMC Modifications - only want 2 decimals
+                sprintf((char*)str, "%0.2f", d);
             }
         }
     }

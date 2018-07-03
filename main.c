@@ -34,6 +34,8 @@ static  char    *controllerID = "1";
 static  char    *devicePort = "/dev/ttyUSB0";
 static  char    *clientID = "ls1024b";          // fix - add random
 
+extern char *createJSONMessage (modbus_t *ctx, const RatedData_t *ratedData, const RealTimeData_t *rtData, 
+        const RealTimeStatus_t *rtStatusData, const Settings_t *setData, const StatisticalParameters_t *stats);
 
 // -----------------------------------------------------------------------------
 int main (int argc, char* argv[]) 
@@ -84,23 +86,13 @@ int main (int argc, char* argv[])
     int seconds, minutes, hour, day, month, year;
     getRealtimeClock( ctx, &seconds, &minutes, &hour, &day, &month, &year );
     printf( "System Clock set to: %02d/%02d/%02d %02d:%02d:%02d\n", month, day, year, hour, minutes, seconds );
-
     puts( "Setting battery capacity to 5AH, type to '1' and loadControlMode to 0x00" );
     setBatteryCapacity( ctx, 5 );
     setBatteryType( ctx, 1 );
     setLoadControlMode( ctx, 0x00 );
 
-    printf( "Night/Day check - it is %s\n", (isNightTime( ctx ) ? "Nighttime" : "Daytime" ) );
-    printf( "Are we above the case temperature threshold: %s\n", getOverTemperatureInsideDevice( ctx ) ? "Yes" : "No" );
-    printf( "Charging Device Status Control is %s\n", (getChargingDeviceStatus( ctx ) ? "On" : "Off") );
-    printf( "Output Control Mode is %s\n", (getOutputControlMode( ctx ) ? "Manual" : "Automatic") );
-    printf( "Manual Load Control Mode is %s\n", (getManualLoadControlMode( ctx ) ? "Manual On" : "Manual Off") );
-    printf( "Default Load Control Mode is %s\n", (getDefaultLoadControlMode( ctx ) ? "Manual On" : "Manual Off") );
-    printf( "Enable Load Test Mode is %s\n", (getEnableLoadTestMode( ctx ) ? "Enabled" : "Disabled") );
-
     
-    while (1) {
-        
+    while (1) {      
         //
         //  every time thru the loop - zero out the structs!
         memset( &ratedData, '\0', sizeof( RatedData_t ) );
@@ -115,13 +107,19 @@ int main (int argc, char* argv[])
         getSettings( ctx, &settingsData );
         getStatisticalParameters( ctx, &statisticalParametersData );
         
-
-        MQTT_PublishRatedData( controllerID, &ratedData );
-        MQTT_PublishRealTimeData( controllerID, &realTimeData );
-        MQTT_PublishRealTimeStatus( controllerID, &realTimeStatusData);
-        MQTT_PublishSettings( controllerID, &settingsData );
-        MQTT_PublishStatisticalParameters( controllerID, &statisticalParametersData );
+        char    *jsonMessage = createJSONMessage( ctx, 
+                                            &ratedData, 
+                                            &realTimeData, 
+                                            &realTimeStatusData,
+                                            &settingsData,
+                                            &statisticalParametersData
+                );
         
+        MQTT_PublishData( controllerID, jsonMessage, strlen( jsonMessage ) );
+        
+        //
+        //
+        free( jsonMessage );
         sleep( loopSleep );
     }
     

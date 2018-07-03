@@ -35,8 +35,6 @@ static  void    defaultOnMessageReceivedCallback( struct mosquitto *mosq, void *
 static  void    defaultOnSubscribedCallback( struct mosquitto *mosq, void *userdata, int mid, int qos_count, const int *granted_qos );
 static  void    defaultOnUnsubscribedCallback( struct mosquitto *mosq, void *userdata, int result );
 static  void    defaultOnPublishedCallback( struct mosquitto *mosq, void *userdata, int result );
-static  char    *getCurrentDateTime (void);
-
 
 
 
@@ -144,6 +142,42 @@ static
 void    MQTT_MessageReceivedHandler (struct mosquitto *mosq, void *userdata, const struct mosquitto_message *msg)
 {
     Logger_LogError( "We are not expecting to receive any MQTT messages!\n" );
+}
+
+// ----------------------------------------------------------------------------
+void    MQTT_PublishData (const char *controllerID, const char *jsonMessage, const int length)
+{
+    int     messageID;
+        
+    //
+    //  format:
+    //  { "topic":"SOLAR/<ID>/RATED", "dateTime":"<datetime>", 
+    //      "batteryCurrent":xx.x
+    //      "batteryPower":xx.x
+    //      "batteryVoltage":xx.x
+    //      "pvArrayCurrent":xx.x
+    //      "pvArrayPower":xx.x
+    //      "pvArrayVoltage":xx.x
+    //      "chargingMode":x }
+    char topic[1024];
+    snprintf( topic, sizeof topic, "%s/%s", publishTopic, "DATA" );
+    
+    int result = mosquitto_publish( myMQTTInstance,
+                        &messageID, 
+                        topic,
+                        length,
+                        jsonMessage,
+                        QoS, 
+                        0 );
+    
+    if (result != MOSQ_ERR_SUCCESS) {
+        Logger_LogError( "Unable to publish the message. Mosquitto error code: %d\n", result );
+    //  MOSQ_ERR_INVAL	if the input parameters were invalid.
+    //  MOSQ_ERR_NOMEM	if an out of memory condition occurred.
+    //  MOSQ_ERR_NO_CONN	if the client isn’t connected to a broker.
+    //  MOSQ_ERR_PROTOCOL	if there is a protocol error communicating with the broker.
+    //  MOSQ_ERR_PAYLOAD_SIZE	if payloadlen is too large.)
+    }        
 }
 
 // ----------------------------------------------------------------------------
@@ -268,6 +302,7 @@ void    MQTT_PublishRealTimeData (const char *controllerID, const RealTimeData_t
 // ----------------------------------------------------------------------------
 void    MQTT_PublishRealTimeStatus (const char *controllerID, const RealTimeStatus_t *data)
 {
+#if 0
     char    message[ 1024 ];
     int     messageID;
         
@@ -366,12 +401,14 @@ void    MQTT_PublishRealTimeStatus (const char *controllerID, const RealTimeStat
     
     if (result != MOSQ_ERR_SUCCESS) {
         Logger_LogError( "Unable to publish the message. Mosquitto error code: %d\n", result );
-    }    
+    }
+#endif    
 }
 
 // ----------------------------------------------------------------------------
 void    MQTT_PublishSettings (const char *controllerID, const Settings_t *data)
 {
+#if 0
     char    message[ 1024 ];
     int     messageID;
         
@@ -452,11 +489,13 @@ void    MQTT_PublishSettings (const char *controllerID, const Settings_t *data)
     if (result != MOSQ_ERR_SUCCESS) {
         Logger_LogError( "Unable to publish the message. Mosquitto error code: %d\n", result );
     }    
+#endif
 }
 
 // ----------------------------------------------------------------------------
 void    MQTT_PublishStatisticalParameters (const char *controllerID, const StatisticalParameters_t *data)
 {
+#if 0
     char    message[ 1024 ];
     int     messageID;
         
@@ -509,6 +548,7 @@ void    MQTT_PublishStatisticalParameters (const char *controllerID, const Stati
     if (result != MOSQ_ERR_SUCCESS) {
         Logger_LogError( "Unable to publish the message. Mosquitto error code: %d\n", result );
     }    
+#endif
 }
 
 // ----------------------------------------------------------------------------
@@ -723,34 +763,4 @@ void defaultOnMessageReceivedCallback (struct mosquitto *mosq, void *userdata, c
         Logger_LogDebug(" MQTT Topic [%s] with no payload\n", message->topic );
     }
      * */
-}
-
-
-// -----------------------------------------------------------------------------
-static  char    currentDateTimeBuffer[ 80 ];
-static
-char    *getCurrentDateTime (void)
-{
-    //
-    // Something quick and dirty... Fix this later - thread safe
-    time_t  current_time;
-    struct  tm  *tmPtr;
- 
-    memset( currentDateTimeBuffer, '\0', sizeof currentDateTimeBuffer );
-    
-    /* Obtain current time as seconds elapsed since the Epoch. */
-    current_time = time( NULL );
-    if (current_time > 0) {
-        /* Convert to local time format. */
-        tmPtr = localtime( &current_time );
- 
-        if (tmPtr != NULL) {
-            strftime( currentDateTimeBuffer,
-                    sizeof currentDateTimeBuffer,
-                    "%FT%T%z",                           // ISO 8601 Format
-                    tmPtr );
-        }
-    }
-    
-    return &currentDateTimeBuffer[ 0 ];
 }

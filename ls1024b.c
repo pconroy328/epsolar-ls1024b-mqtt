@@ -12,6 +12,27 @@ static    char    rtc[ 40 ];
 
 
 // -----------------------------------------------------------------------------
+void    getUsefulData (modbus_t *ctx, UsefulData_t *uData)
+{
+    
+    RealTimeData_t  rtData;
+    getRealTimeData( ctx, &rtData );
+    
+    uData->isNightTime = isNightTime( ctx );
+    uData->caseTempTooHot = getOverTemperatureInsideDevice( ctx );
+    
+    uData->batteryTemp = rtData.batteryTemp;
+    uData->batterySOC = rtData.batterySOC;
+    uData->caseTemp = rtData.caseTemp;
+    uData->pvArrayVoltage = rtData.pvArrayVoltage;
+    uData->pvArrayCurrent = rtData.pvArrayCurrent;
+    uData->loadCurrent = rtData.loadCurrent;
+    uData->loadVoltage = rtData.loadVoltage;
+    
+    
+}
+
+// -----------------------------------------------------------------------------
 void    getRatedData (modbus_t *ctx, RatedData_t *data)
 {
     int         registerAddress = 0x3000;
@@ -756,25 +777,25 @@ void    decodeChargingStatusBits (RealTimeStatus_t *data, const int value)
         default:        data->chargingInputVoltageStatus = "???"; 
     }
 
-    data->chargingMOSFETShort = ((value & 0b0010000000000000) ? "SHORT" : "OK");
-    data->someMOSFETShort = ((value & 0b0001000000000000) ? "SHORT" : "OK");
-    data->antiReverseMOSFETShort = ((value & 0b0000100000000000) ? "SHORT" : "OK");
-    data->inputIsOverCurrent = ((value & 0b0000010000000000) ? "Yes" : "No");
-    data->loadIsOverCurrent = ((value & 0b0000001000000000) ? "Yes" : "No");
-    data->loadIsShort = ((value & 0b0000000100000000) ? "Yes" : "No");
-    data->loadMOSFETIsShort = ((value & 0b0000000010000000) ? "Yes" : "No");
-    data->pvInputIsShort = ((value & 0b0000000000010000) ? "Yes" : "No");
+    data->chargingMOSFETShort = ((value & 0b0010000000000000) ? TRUE : FALSE);
+    data->someMOSFETShort = ((value & 0b0001000000000000) ? TRUE : FALSE);
+    data->antiReverseMOSFETShort = ((value & 0b0000100000000000) ? TRUE : FALSE);
+    data->inputIsOverCurrent = ((value & 0b0000010000000000) ? TRUE : FALSE);
+    data->loadIsOverCurrent = ((value & 0b0000001000000000) ? TRUE : FALSE);
+    data->loadIsShort = ((value & 0b0000000100000000) ? TRUE : FALSE);
+    data->loadMOSFETIsShort = ((value & 0b0000000010000000) ? TRUE : FALSE);
+    data->pvInputIsShort = ((value & 0b0000000000010000) ? TRUE : FALSE);
 
     switch ((data->chargingStatusValue & 0b0000000000001100) >> 2) {
         case    0x00:   data->chargingStatus = "Not Charging";      break;
-        case    0x01:   data->chargingStatus = "Float(ing)";        break;
-        case    0x02:   data->chargingStatus = "Boost(ing)";        break;
+        case    0x01:   data->chargingStatus = "Floating";        break;
+        case    0x02:   data->chargingStatus = "Boosting";        break;
         case    0x03:   data->chargingStatus = "Equalizing";        break;
         default:        data->chargingStatus = "??";        break;
     }
     
-    data->chargingStatusNormal = ((value & 0b0000000000000010) ? "Fault" : "Normal");
-    data->chargingStatusRunning = ((value & 0b0000000000000001) ? "Running" : "Standby");
+    data->chargingStatusNormal = ((value & 0b0000000000000010) ? FALSE : TRUE );
+    data->chargingStatusRunning = ((value & 0b0000000000000001) ? TRUE : FALSE);
 }
 
 // -----------------------------------------------------------------------------
@@ -814,18 +835,17 @@ void    decodeDischargingStatusBits (RealTimeStatus_t *data, const int value)
     }
     
     //                                            5432109876543210
-    data->dischargingShortCircuit = ( (value &  0b0000100000000000) ? "SHORT" : "OK" );
-    data->unableToDischarge = ( (value &        0b0000010000000000) ? "Yes" : "No" );
-    data->unableToStopDischarging = ( (value &  0b0000001000000000) ? "Yes" : "No" );
-    data->outputVoltageAbnormal = ( (value &    0b0000000100000000) ? "Yes" : "No" );
-    data->inputOverpressure = ( (value &        0b0000000010000000) ? "Yes" : "No" );
+    data->dischargingShortCircuit = ( (value &  0b0000100000000000) ? TRUE : FALSE );
+    data->unableToDischarge = ( (value &        0b0000010000000000) ? TRUE : FALSE );
+    data->unableToStopDischarging = ( (value &  0b0000001000000000) ? TRUE : FALSE );
+    data->outputVoltageAbnormal = ( (value &    0b0000000100000000) ? TRUE : FALSE );
+    data->inputOverpressure = ( (value &        0b0000000010000000) ? TRUE : FALSE );
     //                                            5432109876543210
-    data->highVoltageSideShort = ( (value &     0b0000000001000000) ? "Yes" : "No" );
-    data->boostOverpressure = ( (value &        0b0000000000100000) ? "Yes" : "No" );
-    data->outputOverpressure = ( (value &       0b0000000000010000) ? "Yes" : "No" );
-    data->dischargingStatusNormal = ( (value &  0b0000000000000010) ? "Fault" : "Normal" );
-    data->dischargingStatusRunning = ( (value & 0b0000000000000001) ? "Running" : "Standby" );
-    
+    data->highVoltageSideShort = ( (value &     0b0000000001000000) ? TRUE : FALSE );
+    data->boostOverpressure = ( (value &        0b0000000000100000) ? TRUE : FALSE );
+    data->outputOverpressure = ( (value &       0b0000000000010000) ? TRUE : FALSE );
+    data->dischargingStatusNormal = ( (value &  0b0000000000000010) ? FALSE : TRUE );
+    data->dischargingStatusRunning = ( (value & 0b0000000000000001) ? TRUE : FALSE );   
 }
 
 // -----------------------------------------------------------------------------
@@ -868,4 +888,33 @@ int     setIntSettingParameter (modbus_t *ctx, int registerAddress, int intValue
     }    
     
     return TRUE;
+}
+
+
+// -----------------------------------------------------------------------------
+static  char    currentDateTimeBuffer[ 80 ];
+char    *getCurrentDateTime (void)
+{
+    //
+    // Something quick and dirty... Fix this later - thread safe
+    time_t  current_time;
+    struct  tm  *tmPtr;
+ 
+    memset( currentDateTimeBuffer, '\0', sizeof currentDateTimeBuffer );
+    
+    /* Obtain current time as seconds elapsed since the Epoch. */
+    current_time = time( NULL );
+    if (current_time > 0) {
+        /* Convert to local time format. */
+        tmPtr = localtime( &current_time );
+ 
+        if (tmPtr != NULL) {
+            strftime( currentDateTimeBuffer,
+                    sizeof currentDateTimeBuffer,
+                    "%FT%T%z",                           // ISO 8601 Format
+                    tmPtr );
+        }
+    }
+    
+    return &currentDateTimeBuffer[ 0 ];
 }

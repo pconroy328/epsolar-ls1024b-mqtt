@@ -17,6 +17,7 @@
                    displayName="Source Files"
                    projectFiles="true">
       <itemPath>cJSON.c</itemPath>
+      <itemPath>jsonMessage.c</itemPath>
       <itemPath>logger.c</itemPath>
       <itemPath>ls1024b.c</itemPath>
       <itemPath>main.c</itemPath>
@@ -59,6 +60,8 @@
       </item>
       <item path="cJSON.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="jsonMessage.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="logger.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="logger.h" ex="false" tool="3" flavor2="0">
@@ -98,6 +101,8 @@
       <item path="cJSON.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="cJSON.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="jsonMessage.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="logger.c" ex="false" tool="0" flavor2="0">
       </item>

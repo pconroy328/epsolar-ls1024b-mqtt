@@ -26,6 +26,9 @@ extern  void    MQTT_Subscribe( void *aSystem );
 extern  void    MQTT_Unsubscribe( void *aSystem );
 extern  int     MQTT_SendReceive( void *aSystem );
 extern  int     MQTT_HandleError( void *aSystem, int errorCode );
+extern  void    MQTT_PublishData( const char *controllerID, const char *data, const int length );
+
+
 extern  void    MQTT_PublishRatedData( const char *controllerID, const RatedData_t *data );
 extern  void    MQTT_PublishRealTimeData( const char *controllerID, const RealTimeData_t *data );
 extern  void    MQTT_PublishRealTimeStatus( const char *controllerID, const RealTimeStatus_t *data );

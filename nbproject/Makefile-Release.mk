@@ -36,6 +36,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/cJSON.o \
+	${OBJECTDIR}/jsonMessage.o \
 	${OBJECTDIR}/logger.o \
 	${OBJECTDIR}/ls1024b.o \
 	${OBJECTDIR}/main.o \
@@ -70,6 +71,11 @@ ${OBJECTDIR}/cJSON.o: cJSON.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/cJSON.o cJSON.c
+
+${OBJECTDIR}/jsonMessage.o: jsonMessage.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/jsonMessage.o jsonMessage.c
 
 ${OBJECTDIR}/logger.o: logger.c
 	${MKDIR} -p ${OBJECTDIR}

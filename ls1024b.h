@@ -62,31 +62,31 @@ typedef  struct  RealTimeStatus {
     char    *batteryInnerResistance;
     char    *batteryCorrectIdentification;
     
-    char    *chargingInputVoltageStatus;
-    char    *chargingMOSFETShort;
-    char    *someMOSFETShort;
-    char    *antiReverseMOSFETShort;
-    char    *inputIsOverCurrent;
-    char    *loadIsOverCurrent;
-    char    *loadIsShort;
-    char    *loadMOSFETIsShort;
-    char    *pvInputIsShort;
     char    *chargingStatus;
-    char    *chargingStatusNormal;
-    char    *chargingStatusRunning;
+    char    *chargingInputVoltageStatus;
+    int chargingMOSFETShort;
+    int someMOSFETShort;
+    int antiReverseMOSFETShort;
+    int inputIsOverCurrent;
+    int loadIsOverCurrent;
+    int loadIsShort;
+    int loadMOSFETIsShort;
+    int pvInputIsShort;
+    int chargingStatusNormal;
+    int chargingStatusRunning;
     
+    int dischargingStatusNormal;
     char    *dischargingInputVoltageStatus;
     char    *dischargingOutputPower;
-    char    *dischargingShortCircuit;
-    char    *unableToDischarge;
-    char    *unableToStopDischarging;
-    char    *outputVoltageAbnormal;
-    char    *inputOverpressure;
-    char    *highVoltageSideShort;
-    char    *boostOverpressure;
-    char    *outputOverpressure;
-    char    *dischargingStatusNormal;
-    char    *dischargingStatusRunning;
+    int dischargingShortCircuit;
+    int unableToDischarge;
+    int unableToStopDischarging;
+    int outputVoltageAbnormal;
+    int inputOverpressure;
+    int highVoltageSideShort;
+    int boostOverpressure;
+    int outputOverpressure;
+    int dischargingStatusRunning;
 } RealTimeStatus_t;
 
 typedef struct  Settings {
@@ -136,40 +136,60 @@ typedef struct  StatisticalParameters {
     float   batteryVoltage;
 } StatisticalParameters_t;
 
+typedef struct  UsefulData {
+    //
+    // Some of the data I think would be handy is scattered around the other
+    //  structures. Let's cobble together something that combines a few of them
+    
+    //
+    // First these from RealTimeData_t
+    float   pvArrayVoltage;
+    float   pvArrayCurrent;
+    float   loadVoltage;
+    float   loadCurrent; 
+    float   batteryTemp;
+    float   caseTemp;
+    int     batterySOC;
+    
+    int     isNightTime;            // boolean
+    int     caseTempTooHot;         //  boolean 
+    
+        
+} UsefulData_t;
 
 
-
-void    getStatisticalParameters( modbus_t *ctx, StatisticalParameters_t *data );
-void    getRatedData( modbus_t *ctx, RatedData_t *data );
-void    getSettings( modbus_t *ctx, Settings_t *data );
-void    getRealTimeStatus( modbus_t *ctx, RealTimeStatus_t *data );
-void    getRealTimeData( modbus_t *ctx, RealTimeData_t *data );
-int     getChargingDeviceStatus( modbus_t *ctx);
-void    setChargingDeviceStatus( modbus_t *ctx, const int value);
-int     getOutputControlMode( modbus_t *ctx );
-void    setOutputControlMode( modbus_t *ctx, const int value );
-int     getManualLoadControlMode( modbus_t *ctx );
-void    setManualLoadControlMode( modbus_t *ctx, const int value );
-int     getDefaultLoadControlMode( modbus_t *ctx );
-void    setDefaultLoadControlMode( modbus_t *ctx, const int value );
-int     getEnableLoadTestMode( modbus_t *ctx );
-void    setEnableLoadTestMode( modbus_t *ctx, const int value );
-void    forceLoadOnOff( modbus_t *ctx, const int value );
-void    restoreSystemDefaults( modbus_t *ctx );
-void    clearEnergyGeneratingStatistics( modbus_t *ctx );
-int     getOverTemperatureInsideDevice( modbus_t *ctx );
-int     isNightTime( modbus_t *ctx );
-int     getBatteryStateOfCharge( modbus_t*ctx );
-float   getRemoteBatteryTemperature( modbus_t *ctx );
-float   getBatteryRealRatedPower( modbus_t *ctx );
-void    getRealtimeClock( modbus_t *ctx, int *seconds, int *minutes, int *hour, int *day, int *month, int *year );
-void    setRealtimeClock( modbus_t *ctx, const int seconds, const int minutes, const int hour, const int day, const int month, const int year );
-void    setRealtimeClockToNow( modbus_t *ctx );
-void    setBatteryType( modbus_t *ctx, int batteryTypeCode );
-void    setBatteryCapacity( modbus_t *ctx, int batteryCapacityAH );
-void    setHighVoltageDisconnect( modbus_t *ctx, float value );
-void    setLoadControlMode (modbus_t *ctx, int value);
-char    *getRealtimeClockStr (modbus_t *ctx, char *buffer, const int buffSize);
+extern  void    getStatisticalParameters( modbus_t *ctx, StatisticalParameters_t *data );
+extern  void    getRatedData( modbus_t *ctx, RatedData_t *data );
+extern  void    getSettings( modbus_t *ctx, Settings_t *data );
+extern  void    getRealTimeStatus( modbus_t *ctx, RealTimeStatus_t *data );
+extern  void    getRealTimeData( modbus_t *ctx, RealTimeData_t *data );
+extern  int     getChargingDeviceStatus( modbus_t *ctx);
+extern  void    setChargingDeviceStatus( modbus_t *ctx, const int value);
+extern  int     getOutputControlMode( modbus_t *ctx );
+extern  void    setOutputControlMode( modbus_t *ctx, const int value );
+extern  int     getManualLoadControlMode( modbus_t *ctx );
+extern  void    setManualLoadControlMode( modbus_t *ctx, const int value );
+extern  int     getDefaultLoadControlMode( modbus_t *ctx );
+extern  void    setDefaultLoadControlMode( modbus_t *ctx, const int value );
+extern  int     getEnableLoadTestMode( modbus_t *ctx );
+extern  void    setEnableLoadTestMode( modbus_t *ctx, const int value );
+extern  void    forceLoadOnOff( modbus_t *ctx, const int value );
+extern  void    restoreSystemDefaults( modbus_t *ctx );
+extern  void    clearEnergyGeneratingStatistics( modbus_t *ctx );
+extern  int     getOverTemperatureInsideDevice( modbus_t *ctx );
+extern  int     isNightTime( modbus_t *ctx );
+extern  int     getBatteryStateOfCharge( modbus_t*ctx );
+extern  float   getRemoteBatteryTemperature( modbus_t *ctx );
+extern  float   getBatteryRealRatedPower( modbus_t *ctx );
+extern  void    getRealtimeClock( modbus_t *ctx, int *seconds, int *minutes, int *hour, int *day, int *month, int *year );
+extern  void    setRealtimeClock( modbus_t *ctx, const int seconds, const int minutes, const int hour, const int day, const int month, const int year );
+extern  void    setRealtimeClockToNow( modbus_t *ctx );
+extern  void    setBatteryType( modbus_t *ctx, int batteryTypeCode );
+extern  void    setBatteryCapacity( modbus_t *ctx, int batteryCapacityAH );
+extern  void    setHighVoltageDisconnect( modbus_t *ctx, float value );
+extern  void    setLoadControlMode (modbus_t *ctx, int value);
+extern  char    *getRealtimeClockStr (modbus_t *ctx, char *buffer, const int buffSize);
+extern  char    *getCurrentDateTime( void );
 
 
 
