@@ -184,13 +184,16 @@ extern  float   getBatteryRealRatedPower( modbus_t *ctx );
 extern  void    getRealtimeClock( modbus_t *ctx, int *seconds, int *minutes, int *hour, int *day, int *month, int *year );
 extern  void    setRealtimeClock( modbus_t *ctx, const int seconds, const int minutes, const int hour, const int day, const int month, const int year );
 extern  void    setRealtimeClockToNow( modbus_t *ctx );
-extern  void    setBatteryType( modbus_t *ctx, int batteryTypeCode );
-extern  void    setBatteryCapacity( modbus_t *ctx, int batteryCapacityAH );
-extern  void    setHighVoltageDisconnect( modbus_t *ctx, float value );
-extern  void    setLoadControlMode (modbus_t *ctx, int value);
-extern  char    *getRealtimeClockStr (modbus_t *ctx, char *buffer, const int buffSize);
-extern  char    *getCurrentDateTime( void );
-
+extern  void    setBatteryType( modbus_t *ctx, const int batteryTypeCode );
+extern  void    setBatteryCapacity( modbus_t *ctx, const int batteryCapacityAH );
+extern  void    setHighVoltageDisconnect( modbus_t *ctx, const float value );
+extern  void    setLoadControlMode( modbus_t *ctx, const int value );
+extern  char    *getRealtimeClockStr( modbus_t *ctx, char *buffer, const int buffSize );
+extern  char    *getCurrentDateTime( void );;
+extern  void    setChargingDeviceOn( modbus_t *ctx );
+extern  void    setChargingDeviceOff( modbus_t *ctx );
+extern  void    setLoadDeviceOn( modbus_t *ctx );
+extern  void    setLoadDeviceOff( modbus_t *ctx );
 
 
 

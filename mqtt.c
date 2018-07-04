@@ -145,23 +145,10 @@ void    MQTT_MessageReceivedHandler (struct mosquitto *mosq, void *userdata, con
 }
 
 // ----------------------------------------------------------------------------
-void    MQTT_PublishData (const char *controllerID, const char *jsonMessage, const int length)
+void    MQTT_PublishData (const char *topic, const char *jsonMessage, const int length)
 {
     int     messageID;
-        
-    //
-    //  format:
-    //  { "topic":"SOLAR/<ID>/RATED", "dateTime":"<datetime>", 
-    //      "batteryCurrent":xx.x
-    //      "batteryPower":xx.x
-    //      "batteryVoltage":xx.x
-    //      "pvArrayCurrent":xx.x
-    //      "pvArrayPower":xx.x
-    //      "pvArrayVoltage":xx.x
-    //      "chargingMode":x }
-    char topic[1024];
-    snprintf( topic, sizeof topic, "%s/%s", publishTopic, "DATA" );
-    
+   
     int result = mosquitto_publish( myMQTTInstance,
                         &messageID, 
                         topic,
@@ -564,9 +551,16 @@ void    MQTT_Teardown (void *aSystem)
 
 
 // ----------------------------------------------------------------------------
-void    MQTT_Subscribe  (void *aSystem)
+void    MQTT_Subscribe  (const char *topic)
 {
-    Logger_LogError( "We are not expecting to receive any MQTT messages!\n" );
+    //
+    //  Examples we expect
+    //  { "topic" : "LS1024B/x/COMMAND", "dateTime" : "x", "parameter": "Load", "value" : "Off" }   
+    //  { "topic" : "LS1024B/x/COMMAND", "dateTime" : "x", "parameter": "FactoryReset", "value" : true }
+    //  { "topic" : "LS1024B/x/COMMAND", "dateTime" : "x", "parameter": "BatteryType", "value" : "Sealed" }
+    //  { "topic" : "LS1024B/x/COMMAND", "dateTime" : "x", "parameter": "BatteryCapacity", "value" : 5 }
+    
+    
 #if 0    
     int returnCode = mosquitto_subscribe( myMQTTInstance,
                         NULL,                   // message ID, not needed

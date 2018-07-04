@@ -110,9 +110,10 @@
 #include "ls1024b.h"
 
 // -----------------------------------------------------------------------------
-char *createJSONMessage (modbus_t *ctx, const RatedData_t *ratedData, const RealTimeData_t *rtData, const RealTimeStatus_t *rtStatusData, const Settings_t *setData, const StatisticalParameters_t *stats)
+char *createJSONMessage (modbus_t *ctx, const char *topic, const RatedData_t *ratedData, const RealTimeData_t *rtData, const RealTimeStatus_t *rtStatusData, const Settings_t *setData, const StatisticalParameters_t *stats)
 {
     cJSON *message = cJSON_CreateObject();
+    cJSON_AddStringToObject( message, "topic", topic );
     cJSON_AddStringToObject( message, "dateTime", getCurrentDateTime() );
     cJSON_AddStringToObject( message, "controllerDateTime", setData->realtimeClock );
     cJSON_AddBoolToObject( message, "isNightTime", isNightTime( ctx ) );

@@ -22,11 +22,11 @@ extern  void    MQTT_SetDefaults( const char *controllerID );
 extern  void    MQTT_Initialize( const char *controllerID, const char *brokerHost );
 extern  void    MQTT_Teardown( void *aSystem );
 extern  void    *MQTT_MainLoop( void *threadArgs );
-extern  void    MQTT_Subscribe( void *aSystem );
+extern  void    MQTT_Subscribe( const char *topic );
 extern  void    MQTT_Unsubscribe( void *aSystem );
 extern  int     MQTT_SendReceive( void *aSystem );
 extern  int     MQTT_HandleError( void *aSystem, int errorCode );
-extern  void    MQTT_PublishData( const char *controllerID, const char *data, const int length );
+extern  void    MQTT_PublishData( const char *topic, const char *data, const int length );
 
 
 extern  void    MQTT_PublishRatedData( const char *controllerID, const RatedData_t *data );

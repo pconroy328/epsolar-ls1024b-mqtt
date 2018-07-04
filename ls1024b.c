@@ -623,15 +623,15 @@ void    forceLoadOnOff (modbus_t *ctx, const int value)
 // -----------------------------------------------------------------------------
 void    restoreSystemDefaults (modbus_t *ctx)
 {
-    int     coilNum = 13;
-    setCoilValue( ctx, coilNum, 1, "Restore System Defaults (Coil 13)" );
+    int     coilNum = 0x13;
+    setCoilValue( ctx, coilNum, 1, "Restore System Defaults (Coil 0x13)" );
 }
 
 // -----------------------------------------------------------------------------
 void    clearEnergyGeneratingStatistics (modbus_t *ctx)
 {
-    int     coilNum = 14;
-    setCoilValue( ctx, coilNum, 1, "Clear Energy Gen Stats Load (Coil 14)" );
+    int     coilNum = 0x14;
+    setCoilValue( ctx, coilNum, 1, "Clear Energy Gen Stats Load (Coil 0x14)" );
 }
 
 // -----------------------------------------------------------------------------
@@ -674,6 +674,42 @@ int isNightTime (modbus_t *ctx)
     //
     // Mask off the top 7 just in case
     return ( (value & 0b00000001) == 1 );    
+}
+
+//------------------------------------------------------------------------------
+void    setChargingDeviceOn (modbus_t *ctx)
+{
+    int     coilNum = 0x00;
+    setCoilValue( ctx, coilNum, 1, "Control Charging Device - Set On (Coil 0x00)" );
+    
+}
+
+//------------------------------------------------------------------------------
+void    setChargingDeviceOff (modbus_t *ctx)
+{
+    int     coilNum = 0x00;
+    setCoilValue( ctx, coilNum, 0, "Control Charging Device - Set Off (Coil 0x00)" );  
+}
+
+
+//------------------------------------------------------------------------------
+void    setLoadDeviceOn (modbus_t *ctx)
+{
+    // Kick it into Manual control
+    setCoilValue( ctx, 0x01, 1, "Setting Load Control to Manual (Coil 0x01)" );
+    
+    // The turn it on
+    setCoilValue( ctx, 0x02, 1, "Setting Load Control to On (Coil 0x02)" );    
+}
+
+//------------------------------------------------------------------------------
+void    setLoadDeviceOff (modbus_t *ctx)
+{
+    // Kick it into Manual control
+    setCoilValue( ctx, 0x01, 1, "Setting Load Control to Manual (Coil 0x01)" );
+    
+    // The turn it on
+    setCoilValue( ctx, 0x02, 0, "Setting Load Control to Off (Coil 0x02)" );    
 }
 
 //------------------------------------------------------------------------------

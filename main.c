@@ -34,8 +34,12 @@ static  char    *controllerID = "1";
 static  char    *devicePort = "/dev/ttyUSB0";
 static  char    *clientID = "ls1024b";          // fix - add random
 
-extern char *createJSONMessage (modbus_t *ctx, const RatedData_t *ratedData, const RealTimeData_t *rtData, 
-        const RealTimeStatus_t *rtStatusData, const Settings_t *setData, const StatisticalParameters_t *stats);
+static  char    topic[ 1024 ];
+
+
+extern char *createJSONMessage (modbus_t *ctx, const char *topic, const RatedData_t *ratedData, 
+        const RealTimeData_t *rtData, const RealTimeStatus_t *rtStatusData, 
+        const Settings_t *setData, const StatisticalParameters_t *stats);
 
 // -----------------------------------------------------------------------------
 int main (int argc, char* argv[]) 
@@ -68,7 +72,8 @@ int main (int argc, char* argv[])
         return -1;
     }
     
-    
+
+    snprintf( topic, sizeof topic, "%s/%s/%s", "LS1024B", controllerID, "DATA" );
     
     //
     // Figure out how long we need to sleep every loop - it will be the smaller of the two
@@ -108,6 +113,7 @@ int main (int argc, char* argv[])
         getStatisticalParameters( ctx, &statisticalParametersData );
         
         char    *jsonMessage = createJSONMessage( ctx, 
+                                            topic,
                                             &ratedData, 
                                             &realTimeData, 
                                             &realTimeStatusData,
@@ -115,7 +121,7 @@ int main (int argc, char* argv[])
                                             &statisticalParametersData
                 );
         
-        MQTT_PublishData( controllerID, jsonMessage, strlen( jsonMessage ) );
+        MQTT_PublishData( topic, jsonMessage, strlen( jsonMessage ) );
         
         //
         //
