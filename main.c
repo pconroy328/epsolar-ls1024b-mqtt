@@ -158,7 +158,7 @@ void    parseCommandLine (int argc, char *argv[])
     //  -p  <string>    open this /dev/port to talk to contoller (defaults to /dev/ttyUSB0
     char    c;
     
-    while (((c = getopt( argc, argv, "h:t:o:i:p:" )) != -1) && (c != 255)) {
+    while (((c = getopt( argc, argv, "h:t:s:i:p:" )) != -1) && (c != 255)) {
         switch (c) {
             case 'h':   brokerHost = optarg;    break;
             case 's':   sleepSeconds = atoi( optarg );      break;
