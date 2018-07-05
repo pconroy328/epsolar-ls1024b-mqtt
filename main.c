@@ -27,14 +27,14 @@ static  void    parseCommandLine( int, char ** );
 
 
 
-static  int     realTimeData_Seconds = 15;
-static  int     otherData_Seconds = 60;
+static  int     sleepSeconds = 15;
 static  char    *brokerHost = "ec2-52-32-56-28.us-west-2.compute.amazonaws.com";
 static  char    *controllerID = "1";
 static  char    *devicePort = "/dev/ttyUSB0";
 static  char    *clientID = "ls1024b";          // fix - add random
 
-static  char    topic[ 1024 ];
+static  char    *topTopic = "LS1024B";
+static  char    fullTopic[ 1024 ];
 
 
 extern char *createJSONMessage (modbus_t *ctx, const char *topic, const RatedData_t *ratedData, 
@@ -54,7 +54,7 @@ int main (int argc, char* argv[])
     // Need to create a unique client ID
     MQTT_Initialize( controllerID, brokerHost );
     
-    
+    printf( "LS1024B_MQTT application - version 0.0.5\n" );
     printf( "Opening %s, 115200 8N1\n", devicePort );
     ctx = modbus_new_rtu( devicePort, 115200, 'N', 8, 1 );
     if (ctx == NULL) {
@@ -73,12 +73,8 @@ int main (int argc, char* argv[])
     }
     
 
-    snprintf( topic, sizeof topic, "%s/%s/%s", "LS1024B", controllerID, "DATA" );
-    
-    //
-    // Figure out how long we need to sleep every loop - it will be the smaller of the two
-    int loopSleep = (realTimeData_Seconds < otherData_Seconds) ? realTimeData_Seconds : otherData_Seconds;
-    
+    snprintf( fullTopic, sizeof fullTopic, "%s/%s/%s", topTopic, controllerID, "DATA" );
+    printf( "Publishing messaages to MQTT Topic [%s]\n", fullTopic );
     
     RatedData_t             ratedData;
     RealTimeData_t          realTimeData;
@@ -113,7 +109,7 @@ int main (int argc, char* argv[])
         getStatisticalParameters( ctx, &statisticalParametersData );
         
         char    *jsonMessage = createJSONMessage( ctx, 
-                                            topic,
+                                            fullTopic,
                                             &ratedData, 
                                             &realTimeData, 
                                             &realTimeStatusData,
@@ -121,12 +117,12 @@ int main (int argc, char* argv[])
                                             &statisticalParametersData
                 );
         
-        MQTT_PublishData( topic, jsonMessage, strlen( jsonMessage ) );
+        MQTT_PublishData( fullTopic, jsonMessage, strlen( jsonMessage ) );
         
         //
         //
         free( jsonMessage );
-        sleep( loopSleep );
+        sleep( sleepSeconds );
     }
     
     MQTT_Teardown( NULL );
@@ -146,8 +142,8 @@ void    parseCommandLine (int argc, char *argv[])
     //
     //  Options
     //  -h  <string>    MQTT host to connect to
-    //  -t  N           send realtime data every N seconds (defaults to 60)
-    //  -o  N           send all other data packets every N seconds (defaults to 300)
+    //  -t  <string>    MQTT top level topic
+    //  -s  N           sleep between sends <seconds>
     //  -i  <string>    give this controller an identifier (defaults to LS1024B_1)
     //  -p  <string>    open this /dev/port to talk to contoller (defaults to /dev/ttyUSB0
     char    c;
@@ -155,8 +151,8 @@ void    parseCommandLine (int argc, char *argv[])
     while (((c = getopt( argc, argv, "h:t:o:i:p:" )) != -1) && (c != 255)) {
         switch (c) {
             case 'h':   brokerHost = optarg;    break;
-            case 't':   realTimeData_Seconds = atoi( optarg );      break;
-            case 'o':   otherData_Seconds = atoi( optarg );      break;
+            case 's':   sleepSeconds = atoi( optarg );      break;
+            case 't':   topTopic = optarg;      break;
             case 'i':   controllerID = optarg;    break;
             case 'p':   devicePort = optarg;    break;
         }
