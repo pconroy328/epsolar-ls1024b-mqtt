@@ -47,6 +47,8 @@ int main (int argc, char* argv[])
     modbus_t    *ctx;
     char        mqttClientID[ 256 ];
     
+    printf( "LS1024B_MQTT application - version 0.0.6\n" );
+
     parseCommandLine( argc, argv );
     Logger_Initialize( "ls1024b.log", 5 );
     
@@ -54,27 +56,26 @@ int main (int argc, char* argv[])
     // Need to create a unique client ID
     MQTT_Initialize( controllerID, brokerHost );
     
-    printf( "LS1024B_MQTT application - version 0.0.5\n" );
-    printf( "Opening %s, 115200 8N1\n", devicePort );
+    Logger_LogInfo( "Opening %s, 115200 8N1\n", devicePort );
     ctx = modbus_new_rtu( devicePort, 115200, 'N', 8, 1 );
     if (ctx == NULL) {
-        fprintf( stderr, "Unable to create the libmodbus context\n" );
+        Logger_LogFatal( "Unable to create the libmodbus context\n" );
         return -1;
     }
 
-    printf( "Setting slave ID to %X\n", LANDSTAR_1024B_ID );
+    Logger_LogInfo( "Setting slave ID to %X\n", LANDSTAR_1024B_ID );
     modbus_set_slave( ctx, LANDSTAR_1024B_ID );
 
     puts( "Connecting" );
     if (modbus_connect( ctx ) == -1) {
-        fprintf( stderr, "Connection failed: %s\n", modbus_strerror( errno ) );
+        Logger_LogFatal( "Connection failed: %s\n", modbus_strerror( errno ) );
         modbus_free( ctx );
         return -1;
     }
     
 
     snprintf( fullTopic, sizeof fullTopic, "%s/%s/%s", topTopic, controllerID, "DATA" );
-    printf( "Publishing messaages to MQTT Topic [%s]\n", fullTopic );
+    Logger_LogInfo( "Publishing messaages to MQTT Topic [%s]\n", fullTopic );
     
     RatedData_t             ratedData;
     RealTimeData_t          realTimeData;
@@ -82,12 +83,11 @@ int main (int argc, char* argv[])
     Settings_t              settingsData;
     StatisticalParameters_t statisticalParametersData;
 
-    puts( "\nSetting Clock" );
     setRealtimeClockToNow( ctx );
     int seconds, minutes, hour, day, month, year;
     getRealtimeClock( ctx, &seconds, &minutes, &hour, &day, &month, &year );
-    printf( "System Clock set to: %02d/%02d/%02d %02d:%02d:%02d\n", month, day, year, hour, minutes, seconds );
-    puts( "Setting battery capacity to 5AH, type to '1' and loadControlMode to 0x00" );
+    Logger_LogInfo( "System Clock set to: %02d/%02d/%02d %02d:%02d:%02d\n", month, day, year, hour, minutes, seconds );
+    Logger_LogInfo( "Setting battery capacity to 5AH, type to '1' and loadControlMode to 0x00" );
     setBatteryCapacity( ctx, 5 );
     setBatteryType( ctx, 1 );
     setLoadControlMode( ctx, 0x00 );
@@ -126,7 +126,7 @@ int main (int argc, char* argv[])
     }
     
     MQTT_Teardown( NULL );
-    puts( "Done" );
+    Logger_LogInfo( "Done" );
     modbus_close( ctx );
     Logger_Terminate();
     
@@ -140,9 +140,9 @@ void    showHelp()
     puts( "  -h  <string>    MQTT host to connect to" );
     puts( "  -t  <string>    MQTT top level topic" );
     puts( "  -s  N           sleep between sends <seconds>" );
-    puts( "  -i  <string>    give this controller an identifier (defaults to LS1024B_1)" );
-    puts( "  -p  <string>    open this /dev/port to talk to contoller (defaults to /dev/ttyUSB0" );
-    
+    puts( "  -i  <string>    give this controller an identifier (defaults to '1')" );
+    puts( "  -p  <string>    open this /dev/port to talk to contoller (defaults to /dev/ttyUSB0)" );
+    exit( 1 ); 
 }
 
 // -----------------------------------------------------------------------------
