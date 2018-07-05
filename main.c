@@ -133,7 +133,17 @@ int main (int argc, char* argv[])
     return (EXIT_SUCCESS);
 }
 
-
+static
+void    showHelp()
+{
+    puts( "Options" );
+    puts( "  -h  <string>    MQTT host to connect to" );
+    puts( "  -t  <string>    MQTT top level topic" );
+    puts( "  -s  N           sleep between sends <seconds>" );
+    puts( "  -i  <string>    give this controller an identifier (defaults to LS1024B_1)" );
+    puts( "  -p  <string>    open this /dev/port to talk to contoller (defaults to /dev/ttyUSB0" );
+    
+}
 
 // -----------------------------------------------------------------------------
 static
@@ -155,6 +165,8 @@ void    parseCommandLine (int argc, char *argv[])
             case 't':   topTopic = optarg;      break;
             case 'i':   controllerID = optarg;    break;
             case 'p':   devicePort = optarg;    break;
+            
+            default:    showHelp();     break;
         }
     }
 
