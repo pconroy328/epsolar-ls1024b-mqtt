@@ -20,9 +20,9 @@ extern "C" {
     
 extern  void    MQTT_SetDefaults( const char *controllerID );
 extern  void    MQTT_Initialize( const char *controllerID, const char *brokerHost );
-extern  void    MQTT_Teardown( void *aSystem );
+extern  void    MQTT_Teardown( );
 extern  void    *MQTT_MainLoop( void *threadArgs );
-extern  void    MQTT_Subscribe( const char *topic );
+extern  void    MQTT_Subscribe( const char *topic, const int QoS );
 extern  void    MQTT_Unsubscribe( void *aSystem );
 extern  int     MQTT_SendReceive( void *aSystem );
 extern  int     MQTT_HandleError( void *aSystem, int errorCode );
