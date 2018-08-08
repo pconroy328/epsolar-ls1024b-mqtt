@@ -106,6 +106,7 @@
  * 
  */
 
+#include <stdio.h>
 #include "cJSON.h"
 #include "ls1024b.h"
 
@@ -114,6 +115,8 @@ char *createJSONMessage (modbus_t *ctx, const char *topic, const RatedData_t *ra
 {
     cJSON *message = cJSON_CreateObject();
     cJSON_AddStringToObject( message, "topic", topic );
+    cJSON_AddStringToObject( message, "version", "1.1" );
+    
     cJSON_AddStringToObject( message, "dateTime", getCurrentDateTime() );
     cJSON_AddStringToObject( message, "controllerDateTime", setData->realtimeClock );
     cJSON_AddBoolToObject( message, "isNightTime", isNightTime( ctx ) );
@@ -197,8 +200,14 @@ char *createJSONMessage (modbus_t *ctx, const char *topic, const RatedData_t *ra
     cJSON_AddNumberToObject( settings, "dischargingLimitVoltage", setData->dischargingLimitVoltage );
     cJSON_AddNumberToObject( settings, "batteryTempWarningUpperLimit", setData->batteryTempWarningUpperLimit );
     cJSON_AddNumberToObject( settings, "batteryTempWarningLowerLimit", setData->batteryTempWarningLowerLimit );
-    cJSON_AddNumberToObject( settings, "controllerTempWarningUpperLimit", setData->controllerTempWarningUpperLimit );
-    cJSON_AddNumberToObject( settings, "controllerTempWarningLowerLimit", setData->controllerTempWarningLowerLimit );
+ 
+    cJSON_AddNumberToObject( settings, "controllerInnerTempUpperLimit", setData->controllerInnerTempUpperLimit );
+    cJSON_AddNumberToObject( settings, "controllerInnerTempUpperLimitRecover", setData->controllerInnerTempUpperLimitRecover );
+    
+    cJSON_AddNumberToObject( settings, "powerComponentTempUpperLimit", setData->powerComponentTempUpperLimit );
+    cJSON_AddNumberToObject( settings, "powerComponentTempUpperLimitRecover", setData->powerComponentTempUpperLimitRecover );
+    cJSON_AddNumberToObject( settings, "lineImpedence", setData->lineImpedence );
+    
     cJSON_AddNumberToObject( settings, "daytimeThresholdVoltage", setData->daytimeThresholdVoltage );
     cJSON_AddNumberToObject( settings, "lightSignalStartupTime", setData->lightSignalStartupTime );
     cJSON_AddNumberToObject( settings, "lighttimeThresholdVoltage", setData->lighttimeThresholdVoltage );
@@ -206,6 +215,32 @@ char *createJSONMessage (modbus_t *ctx, const char *topic, const RatedData_t *ra
     cJSON_AddNumberToObject( settings, "localControllingModes", setData->localControllingModes );
     cJSON_AddNumberToObject( settings, "workingTimeLength1", setData->workingTimeLength1 );
     cJSON_AddNumberToObject( settings, "workingTimeLength2", setData->workingTimeLength2 );
+    
+    
+    char    dtBuffer[ 32 ];
+    snprintf( dtBuffer, sizeof dtBuffer, "%02d:%02d:%02d", setData->turnOnTiming1_seconds, setData->turnOnTiming1_minutes, setData->turnOnTiming1_hours );
+    cJSON_AddStringToObject( settings, "turnOnTiming1", dtBuffer );
+            
+    snprintf( dtBuffer, sizeof dtBuffer, "%02d:%02d:%02d", setData->turnOffTiming1_seconds, setData->turnOffTiming1_minutes, setData->turnOffTiming1_hours );
+    cJSON_AddStringToObject( settings, "turnOffTiming1", dtBuffer );
+            
+    snprintf( dtBuffer, sizeof dtBuffer, "%02d:%02d:%02d", setData->turnOnTiming2_seconds, setData->turnOnTiming2_minutes, setData->turnOnTiming2_hours );
+    cJSON_AddStringToObject( settings, "turnOnTiming2", dtBuffer );
+            
+    snprintf( dtBuffer, sizeof dtBuffer, "%02d:%02d:%02d", setData->turnOffTiming2_seconds, setData->turnOffTiming2_minutes, setData->turnOffTiming2_hours );
+    cJSON_AddStringToObject( settings, "turnOffTiming2", dtBuffer );
+
+   
+    cJSON_AddNumberToObject( settings, "lengthOfNight", setData->lengthOfNight );
+    cJSON_AddNumberToObject( settings, "batteryRatedVoltageCode", setData->batteryRatedVoltageCode );
+    cJSON_AddNumberToObject( settings, "loadTimingControlSelection", setData->loadTimingControlSelection );
+    cJSON_AddNumberToObject( settings, "defaultLoadOnOffManualMode", setData->defaultLoadOnOffManualMode );
+    cJSON_AddNumberToObject( settings, "equalizeDuration", setData->equalizeDuration );
+    cJSON_AddNumberToObject( settings, "boostDuration", setData->boostDuration );
+    cJSON_AddNumberToObject( settings, "dischargingPercentage", setData->dischargingPercentage );
+    cJSON_AddNumberToObject( settings, "chargingPercentage", setData->chargingPercentage );
+    cJSON_AddNumberToObject( settings, "batteryManagementMode", setData->batteryManagementMode );
+     
     cJSON_AddItemToObject( message, "settings", settings );
 
     

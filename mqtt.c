@@ -10,6 +10,7 @@
 #include "mqtt.h"
 #include "logger.h"
 #include "ls1024b.h"
+#include "cJSON.h"
 
 
 
@@ -139,7 +140,39 @@ void    MQTT_Initialize (const char *controllerID, const char *brokerHost)
 static  
 void    MQTT_MessageReceivedHandler (struct mosquitto *mosq, void *userdata, const struct mosquitto_message *msg)
 {
-    Logger_LogError( "We are not expecting to receive any MQTT messages!\n" );
+    //
+    //  Examples we expect
+    //  { "topic" : "LS1024B/x/COMMAND", "dateTime" : "x", "parameter": "Load", "value" : "Off" }   
+    //  { "topic" : "LS1024B/x/COMMAND", "dateTime" : "x", "parameter": "FactoryReset", "value" : true }
+    //  { "topic" : "LS1024B/x/COMMAND", "dateTime" : "x", "parameter": "BatteryType", "value" : "Sealed" }
+    //  { "topic" : "LS1024B/x/COMMAND", "dateTime" : "x", "parameter": "BatteryCapacity", "value" : 5 }
+    char    *jsonPayload = msg->payload;
+    int     jsonLength = msg->payloadlen;
+    char    *topic = msg->topic;
+#if 0    
+    if (jsonPayload != NULL && jsonLength > 0) {
+        cJSON *json = cJSON_Parse( jsonPayload );
+
+        cJSON   *value = NULL;
+        cJSON   *parameter = cJSON_GetObjectItem( json, "parameter" );
+        if (cJSON_IsString( parameter ) && (parameter->valuestring != NULL)) {
+            
+            char *value = cJSON_GetObjectItem( json, "value" );
+            if (cJSON_IsString( value ) && (value->valuestring != NULL)) {
+                
+            } else {
+                Logger_LogError( "No attributed named 'value' after the 'parameter' attribute in the json message!\n" );            
+            }
+            
+        } else {
+            Logger_LogError( "No attributed named 'parameter' in the json message!\n" );
+        }
+        
+        cJSON_Delete( json );       
+    } else {
+        Logger_LogError( "Received a null or zero length message\n" );
+    }
+#endif
 }
 
 // ----------------------------------------------------------------------------
@@ -166,7 +199,7 @@ void    MQTT_PublishData (const char *topic, const char *jsonMessage, const int 
 }
 
 // ----------------------------------------------------------------------------
-void    MQTT_Teardown (void *aSystem)
+void    MQTT_Teardown ()
 {
     Logger_LogInfo( "MQTT_Teardown() - we're shutting down the MQTT pipe.\n" );
     // MQTT_Unsubscribe( aSystem );
@@ -178,25 +211,15 @@ void    MQTT_Teardown (void *aSystem)
 
 
 // ----------------------------------------------------------------------------
-void    MQTT_Subscribe  (const char *topic)
-{
-    //
-    //  Examples we expect
-    //  { "topic" : "LS1024B/x/COMMAND", "dateTime" : "x", "parameter": "Load", "value" : "Off" }   
-    //  { "topic" : "LS1024B/x/COMMAND", "dateTime" : "x", "parameter": "FactoryReset", "value" : true }
-    //  { "topic" : "LS1024B/x/COMMAND", "dateTime" : "x", "parameter": "BatteryType", "value" : "Sealed" }
-    //  { "topic" : "LS1024B/x/COMMAND", "dateTime" : "x", "parameter": "BatteryCapacity", "value" : 5 }
-    
-    
-#if 0    
+void    MQTT_Subscribe  (const char *topic, const int QoS)
+{     
     int returnCode = mosquitto_subscribe( myMQTTInstance,
                         NULL,                   // message ID, not needed
-                        subscriptionTopic,         // remember this is concatenated parent + subscribe
-                        aSystem->mqtt.QoS );
+                        topic,                  // remember this is concatenated parent + subscribe
+                        QoS );
   
     if (returnCode != MOSQ_ERR_SUCCESS)
-        Logger_LogError( "Unable to subscribe to topic [%s], reason: %d\n", subscriptionTopic, returnCode );
-#endif    
+        Logger_LogError( "Unable to subscribe to topic [%s], reason: %d\n", topic, returnCode );    
 }
 
 // ----------------------------------------------------------------------------
@@ -208,70 +231,7 @@ void    MQTT_Unsubscribe  (void *aSystem)
   
     if (returnCode != MOSQ_ERR_SUCCESS)
         Logger_LogError( "Unable to UNsubscribe to topic [%s], reason: %d\n", subscriptionTopic, returnCode );    
-}
-
-// -----------------------------------------------------------------------------
-void    MQTT_SetLastWillAndTestament (void *aSystem) 
-{
-#if 0 
-    Logger_LogInfo( "MQTT Setting Last Will And Testament\n" );
-    
-    /* From the documentation 
-        mosquitto_will_set
-
-            libmosq_EXPORT int mosquitto_will_set(	struct 	mosquitto 	*	mosq,
-                const 	char 	*	topic,
-                        int 		payloadlen,
-                const 	void 	*	payload,
-                        int 		qos,
-                        bool 		retain	)
-
-        Configure will information for a mosquitto instance.  By default, clients do not have a will.  This must be called before calling mosquitto_connect.
-        Parameters
-        mosq	a valid mosquitto instance.
-        topic	the topic on which to publish the will.
-        payloadlen	the size of the payload (bytes).  Valid values are between 0 and 268,435,455.
-        payload	pointer to the data to send.  If payloadlen > 0 this must be a valid memory location.
-        qos	integer value 0, 1 or 2 indicating the Quality of Service to be used for the will.
-        retain	set to true to make the will a retained message.
-        Returns
-        MOSQ_ERR_SUCCESS	on success.
-        MOSQ_ERR_INVAL	if the input parameters were invalid.
-        MOSQ_ERR_NOMEM	if an out of memory condition occurred.
-        MOSQ_ERR_PAYLOAD_SIZE	if payloadlen is too large.
-
-    */
-
-
-    //
-    //  Let's create our custom, time based (so it's unique) ID first
-//    char    timebasedID[ 16 ];
-//    (void) make_UTC_TimeBasedID( timebasedID, 16 );
-    
-    
-    
-    //
-    //  Payload should be JSON like: { "topic" : "CSCS/LWT", "ID" : "xx.xx", "system" : "aaa", "payload" : "Connection Lost" }
-    static  char    *lwtPayload = "{ \"topic\" : \"CSCS/LWT\", \"ID\" : \"%s\", \"system\" : \"BARCODE SCANNER\", \"payload\" : \"Connection Lost\" } ";
-    char            message[ 256 ];
-    
-    int len = snprintf( message, sizeof( message ), lwtPayload, timebasedID );
-    
-    
-    int result = mosquitto_will_set( myMQTTInstance, 
-                        "CSCS/LWT",
-                        len, message,
-                        0, false );
-    
-    if (result != MOSQ_ERR_SUCCESS) {
-        Logger_LogError( "Unable to set the last will and testament. Mosquitto error code: %d\n", result );
-    //  MOSQ_ERR_INVAL	if the input parameters were invalid.
-    //  MOSQ_ERR_NOMEM	if an out of memory condition occurred.
-    //  MOSQ_ERR_PAYLOAD_SIZE	if payloadlen is too large.)
-    } 
-#endif
-}
-            
+}          
 
 // ------------------------------------------------------------------------------
 //

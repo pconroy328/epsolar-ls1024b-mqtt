@@ -271,7 +271,7 @@ void    getSettings (modbus_t *ctx, Settings_t *data)
     
     
     registerAddress = 0x9017;
-    numBytes = 4;
+    numBytes = 7;
     memset( buffer, '\0', sizeof buffer );
     if (modbus_read_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
         fprintf(stderr, "getSettings() - Read of 4 starting at 0x9017 failed: %s\n", modbus_strerror( errno ));
@@ -279,10 +279,11 @@ void    getSettings (modbus_t *ctx, Settings_t *data)
     }
     data->batteryTempWarningUpperLimit = ((float) buffer[ 0x00 ]) / 100.0;
     data->batteryTempWarningLowerLimit = ((float) buffer[ 0x01 ]) / 100.0;
-    data->controllerTempWarningUpperLimit = ((float) buffer[ 0x02 ]) / 100.0;
-    data->controllerTempWarningLowerLimit = ((float) buffer[ 0x03 ]) / 100.0;
-
-    
+    data->controllerInnerTempUpperLimit = ((float) buffer[ 0x02 ]) / 100.0;
+    data->controllerInnerTempUpperLimitRecover = ((float) buffer[ 0x03 ]) / 100.0;
+    data->powerComponentTempUpperLimit = ((float) buffer[ 0x04 ]) / 100.0;
+    data->powerComponentTempUpperLimitRecover  = ((float) buffer[ 0x05 ]) / 100.0;
+    data->lineImpedence = ((float) buffer[ 0x06 ]) / 100.0;
     
     registerAddress = 0x901E;
     numBytes = 4;
@@ -309,6 +310,50 @@ void    getSettings (modbus_t *ctx, Settings_t *data)
     data->localControllingModes = buffer[ 0x00 ];
     data->workingTimeLength1    = buffer[ 0x01 ];
     data->workingTimeLength2    = buffer[ 0x02 ];
+
+
+    registerAddress = 0x9042;
+    numBytes = 12;
+    memset( buffer, '\0', sizeof buffer );
+    if (modbus_read_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
+        fprintf(stderr, "getSettings() - Read of 3 starting at 0x903D failed: %s\n", modbus_strerror( errno ));
+        return;
+    }
+
+    data->turnOnTiming1_seconds = buffer[ 0x00 ];
+    data->turnOnTiming1_minutes = buffer[ 0x01 ];
+    data->turnOnTiming1_hours   = buffer[ 0x02 ];
+
+    data->turnOffTiming1_seconds = buffer[ 0x03 ];
+    data->turnOffTiming1_minutes = buffer[ 0x04 ];
+    data->turnOffTiming1_hours   = buffer[ 0x05 ];
+    
+    data->turnOnTiming2_seconds = buffer[ 0x06 ];
+    data->turnOnTiming2_minutes = buffer[ 0x07 ];
+    data->turnOnTiming2_hours   = buffer[ 0x08 ];
+
+    data->turnOffTiming2_seconds = buffer[ 0x09 ];
+    data->turnOffTiming2_minutes = buffer[ 0x0A ];
+    data->turnOffTiming2_hours   = buffer[ 0x0B ];
+
+
+    registerAddress = 0x9065;
+    numBytes = 9;
+    memset( buffer, '\0', sizeof buffer );
+    if (modbus_read_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
+        fprintf(stderr, "getSettings() - Read of 3 starting at 0x903D failed: %s\n", modbus_strerror( errno ));
+        return;
+    }
+    
+    data->lengthOfNight             = buffer[ 0x00 ];
+    data->batteryRatedVoltageCode   = buffer[ 0x01 ];
+    data->loadTimingControlSelection = buffer[ 0x02 ];
+    data->defaultLoadOnOffManualMode = buffer[ 0x03 ];
+    data->equalizeDuration          = ((float) buffer[ 0x04 ]) / 100.0;
+    data->boostDuration             = ((float) buffer[ 0x05 ]) / 100.0;
+    data->dischargingPercentage     = buffer[ 0x06 ]; 
+    data->chargingPercentage        = buffer[ 0x07 ];
+    data->batteryManagementMode     = buffer[ 0x08 ];
 }
 
 

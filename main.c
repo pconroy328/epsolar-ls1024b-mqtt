@@ -47,7 +47,7 @@ int main (int argc, char* argv[])
     modbus_t    *ctx;
     char        mqttClientID[ 256 ];
     
-    printf( "LS1024B_MQTT application - version 0.0.6\n" );
+    printf( "LS1024B_MQTT application - version 0.9.0 \n" );
 
     parseCommandLine( argc, argv );
     Logger_Initialize( "ls1024b.log", 5 );

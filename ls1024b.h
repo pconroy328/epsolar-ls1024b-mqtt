@@ -108,15 +108,49 @@ typedef struct  Settings {
     char    *realtimeClock;
     float   batteryTempWarningUpperLimit;
     float   batteryTempWarningLowerLimit;
-    float   controllerTempWarningUpperLimit;
-    float   controllerTempWarningLowerLimit;
+    
+    float   controllerInnerTempUpperLimit;
+    float   controllerInnerTempUpperLimitRecover;
+    float   powerComponentTempUpperLimit;
+    float   powerComponentTempUpperLimitRecover;
+    float   lineImpedence;
+
+    
     float   daytimeThresholdVoltage;
+
+
     int     lightSignalStartupTime;
     float   lighttimeThresholdVoltage;
     int     lightSignalCloseDelayTime;
     int     localControllingModes;
     int     workingTimeLength1;
     int     workingTimeLength2;
+    int     turnOnTiming1_seconds;
+    int     turnOnTiming1_minutes;
+    int     turnOnTiming1_hours;
+
+    int     turnOffTiming1_seconds;
+    int     turnOffTiming1_minutes;
+    int     turnOffTiming1_hours;
+    
+    int     turnOnTiming2_seconds;
+    int     turnOnTiming2_minutes;
+    int     turnOnTiming2_hours;
+
+    int     turnOffTiming2_seconds;
+    int     turnOffTiming2_minutes;
+    int     turnOffTiming2_hours;
+
+    int     lengthOfNight;
+    int     batteryRatedVoltageCode;
+    int     loadTimingControlSelection;
+    int     defaultLoadOnOffManualMode;
+    float   equalizeDuration;
+    float   boostDuration;
+    int     dischargingPercentage;
+    int     chargingPercentage;
+    int     batteryManagementMode;
+
 } Settings_t;
 
 typedef struct  StatisticalParameters {
