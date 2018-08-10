@@ -229,7 +229,32 @@ extern  void    setChargingDeviceOff( modbus_t *ctx );
 extern  void    setLoadDeviceOn( modbus_t *ctx );
 extern  void    setLoadDeviceOff( modbus_t *ctx );
 
+static
+int   int_read_input_register ( modbus_t *ctx,
+                                    const int registerAddress,
+                                    const int numBytes,
+                                    const char *description,
+                                    const int badReadValue );
+static
+float   float_read_input_register ( modbus_t *ctx,
+                                    const int registerAddress,
+                                    const int numBytes,
+                                    const char *description,
+                                    const float badReadValue );
 
+
+static
+int   int_read_register ( modbus_t *ctx,
+                                    const int registerAddress,
+                                    const int numBytes,
+                                    const char *description,
+                                    const int badReadValue );
+static
+float   float_read_register ( modbus_t *ctx,
+                                    const int registerAddress,
+                                    const int numBytes,
+                                    const char *description,
+                                    const float badReadValue );
 
 
 static  char    *batteryTypeToString( uint16_t batteryType );

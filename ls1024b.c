@@ -28,8 +28,6 @@ void    getUsefulData (modbus_t *ctx, UsefulData_t *uData)
     uData->pvArrayCurrent = rtData.pvArrayCurrent;
     uData->loadCurrent = rtData.loadCurrent;
     uData->loadVoltage = rtData.loadVoltage;
-    
-    
 }
 
 // -----------------------------------------------------------------------------
@@ -42,8 +40,8 @@ void    getRatedData (modbus_t *ctx, RatedData_t *data)
     memset( buffer, '\0', sizeof buffer );
     
     if (modbus_read_input_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
-        fprintf(stderr, "getRatedData() - Read failed: %s\n", modbus_strerror( errno ));
-        return;
+        Logger_LogError( "getRatedData() - Read of 9 at 0x3000 failed: %s\n", modbus_strerror( errno ));
+        ;
     }
 
     
@@ -71,8 +69,8 @@ void    getRatedData (modbus_t *ctx, RatedData_t *data)
     memset( buffer, '\0', sizeof buffer );
     
     if (modbus_read_input_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
-        fprintf(stderr, "getRatedData() - Second Read failed of regsiter 0x200E: %s\n", modbus_strerror( errno ));
-        return;
+        Logger_LogError( "getRatedData() - Second Read failed of register 0x300E: %s\n", modbus_strerror( errno ));
+        ;
     }
     data->ratedCurrentOfLoad = ((float) buffer[ 0 ]) / 100.0;
 }
@@ -88,8 +86,8 @@ void    getRealTimeData (modbus_t *ctx, RealTimeData_t *data)
     memset( buffer, '\0', sizeof buffer );
     
     if (modbus_read_input_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
-        fprintf(stderr, "getRealTimeData() - Read failed: %s\n", modbus_strerror( errno ));
-        return;
+        Logger_LogError( "getRealTimeData() - Read of 12 at address 0x3100 failed: %s\n", modbus_strerror( errno ));
+        ;
     }
     
     // ---------------------------------------------
@@ -147,8 +145,8 @@ void    getRealTimeStatus (modbus_t *ctx, RealTimeStatus_t *data)
     memset( buffer, '\0', sizeof buffer );
     
     if (modbus_read_input_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
-        fprintf(stderr, "getRealTimeStatus() - Read failed: %s\n", modbus_strerror( errno ));
-        return;
+        Logger_LogError( "getRealTimeStatus() - Read of 3 at address 0x3200 failed: %s\n", modbus_strerror( errno ));
+        ;
     }
     
     data->batteryStatusValue =  buffer[ 0x00 ];
@@ -171,8 +169,8 @@ void    getStatisticalParameters (modbus_t *ctx, StatisticalParameters_t *data)
     memset( buffer, '\0', sizeof buffer );
     
     if (modbus_read_input_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
-        fprintf(stderr, "getStatisicalParameters() - Read failed: %s\n", modbus_strerror( errno ));
-        return;
+        Logger_LogError( "getStatisicalParameters() - Read of 0x1E at address 0x3300 failed: %s\n", modbus_strerror( errno ));
+        ;
     }
 
      data->maximumInputVoltageToday = ((float) buffer[ 0x00 ]) / 100.0;
@@ -221,8 +219,8 @@ void    getStatisticalParameters (modbus_t *ctx, StatisticalParameters_t *data)
     memset( buffer, '\0', sizeof buffer );
     
     if (modbus_read_input_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
-        fprintf(stderr, "getStatisicalParameters() - Second Read or register 0x331A failed: %s\n", modbus_strerror( errno ));
-        return;
+        Logger_LogError( "getStatisicalParameters() - Second Read of 3 register 0x331A failed: %s\n", modbus_strerror( errno ));
+        ;
     }
    
     data->batteryVoltage =   ((float) buffer[ 0x00 ]) / 100.0;
@@ -242,8 +240,8 @@ void    getSettings (modbus_t *ctx, Settings_t *data)
     memset( buffer, '\0', sizeof buffer );
     
     if (modbus_read_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
-        fprintf(stderr, "getSettings() - Read failed: %s\n", modbus_strerror( errno ));
-        return;
+        Logger_LogError( "getSettings() - Read of 0x0F address 0x9000 failed: %s\n", modbus_strerror( errno ));
+        ;
     }
     
     data->batteryType =  batteryTypeToString( buffer[ 0x00 ] );
@@ -274,8 +272,8 @@ void    getSettings (modbus_t *ctx, Settings_t *data)
     numBytes = 7;
     memset( buffer, '\0', sizeof buffer );
     if (modbus_read_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
-        fprintf(stderr, "getSettings() - Read of 4 starting at 0x9017 failed: %s\n", modbus_strerror( errno ));
-        return;
+        Logger_LogError( "getSettings() - Read of 4 starting at 0x9017 failed: %s\n", modbus_strerror( errno ));
+        ;
     }
     data->batteryTempWarningUpperLimit = ((float) buffer[ 0x00 ]) / 100.0;
     data->batteryTempWarningLowerLimit = ((float) buffer[ 0x01 ]) / 100.0;
@@ -289,8 +287,8 @@ void    getSettings (modbus_t *ctx, Settings_t *data)
     numBytes = 4;
     memset( buffer, '\0', sizeof buffer );
     if (modbus_read_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
-        fprintf(stderr, "getSettings() - Read of 4 starting at 0x901E failed: %s\n", modbus_strerror( errno ));
-        return;
+        Logger_LogError( "getSettings() - Read of 4 starting at 0x901E failed: %s\n", modbus_strerror( errno ));
+        ;
     }
     
     data->daytimeThresholdVoltage    = ((float) buffer[ 0x00 ]) / 100.0;
@@ -303,8 +301,8 @@ void    getSettings (modbus_t *ctx, Settings_t *data)
     numBytes = 3;
     memset( buffer, '\0', sizeof buffer );
     if (modbus_read_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
-        fprintf(stderr, "getSettings() - Read of 3 starting at 0x903D failed: %s\n", modbus_strerror( errno ));
-        return;
+        Logger_LogError( "getSettings() - Read of 3 starting at 0x903D failed: %s\n", modbus_strerror( errno ));
+        ;
     }
     
     data->localControllingModes = buffer[ 0x00 ];
@@ -316,8 +314,7 @@ void    getSettings (modbus_t *ctx, Settings_t *data)
     numBytes = 12;
     memset( buffer, '\0', sizeof buffer );
     if (modbus_read_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
-        fprintf(stderr, "getSettings() - Read of 3 starting at 0x903D failed: %s\n", modbus_strerror( errno ));
-        return;
+        Logger_LogError( "getSettings() - Read of 12 starting at 0x9042 failed: %s\n", modbus_strerror( errno ));
     }
 
     data->turnOnTiming1_seconds = buffer[ 0x00 ];
@@ -336,13 +333,13 @@ void    getSettings (modbus_t *ctx, Settings_t *data)
     data->turnOffTiming2_minutes = buffer[ 0x0A ];
     data->turnOffTiming2_hours   = buffer[ 0x0B ];
 
-
+#if 0
     registerAddress = 0x9065;
-    numBytes = 9;
+    numBytes = 2;
     memset( buffer, '\0', sizeof buffer );
     if (modbus_read_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
-        fprintf(stderr, "getSettings() - Read of 3 starting at 0x903D failed: %s\n", modbus_strerror( errno ));
-        return;
+        Logger_LogError( "getSettings() - Read of 9 starting at 0x9065 failed: %s\n", modbus_strerror( errno ));
+        ;
     }
     
     data->lengthOfNight             = buffer[ 0x00 ];
@@ -354,6 +351,19 @@ void    getSettings (modbus_t *ctx, Settings_t *data)
     data->dischargingPercentage     = buffer[ 0x06 ]; 
     data->chargingPercentage        = buffer[ 0x07 ];
     data->batteryManagementMode     = buffer[ 0x08 ];
+#endif
+    
+    data->lengthOfNight = int_read_register( ctx, 0x9065, 1, "Length of Night @ 0x9065", -1 );
+    data->batteryRatedVoltageCode = int_read_register( ctx, 0x9067, 1, "batteryRatedVoltageCode @ 0x9067", -1 );
+    data->loadTimingControlSelection = int_read_register( ctx, 0x9069, 1, "batteryRatedVoltageCode @ 0x9069", -1 );
+    
+    data->defaultLoadOnOffManualMode = int_read_register( ctx, 0x906A, 1, "defaultLoadOnOffManualMode @ 0x906A", -1 );
+    data->equalizeDuration          = int_read_register( ctx, 0x906B, 1, "equalizeDuration @ 0x906B", -1 );
+    data->boostDuration             = int_read_register( ctx, 0x906C, 1, "boostDuration @ 0x906C", -1 );
+    data->dischargingPercentage     = float_read_register( ctx, 0x906D, 1, "dischargingPercentage @ 0x906D", -1.0 );
+    data->chargingPercentage        = float_read_register( ctx, 0x906E, 1, "chargingPercentage @ 0x906E", -1.0 );
+    
+    data->batteryManagementMode = int_read_register( ctx, 0x9070, 1, "batteryManagementMode @ 0x9070", -1.0 );
 }
 
 
@@ -368,7 +378,7 @@ int     getBatteryStateOfCharge (modbus_t *ctx)
     memset( buffer, '\0', sizeof buffer );
     
     if (modbus_read_input_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
-        fprintf(stderr, "getRealTimeData() - Read failed: %s\n", modbus_strerror( errno ));
+        Logger_LogError( "getRealTimeData() - Read of 1 at 0x311A failed: %s\n", modbus_strerror( errno ));
         return -1;
     }
     
@@ -385,7 +395,7 @@ float   getRemoteBatteryTemperature (modbus_t *ctx)
     memset( buffer, '\0', sizeof buffer );
     
     if (modbus_read_input_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
-        fprintf(stderr, "getRemoteBatteryTemp() - Read failed: %s\n", modbus_strerror( errno ));
+        Logger_LogError( "getRemoteBatteryTemp() - Read of 1 at 0x311B failed: %s\n", modbus_strerror( errno ));
         return -1;
     }
     //printf( "       remote battery temp sent back: %0x (hex)  %d\n", buffer[ 0 ], buffer[ 0 ] );
@@ -402,7 +412,7 @@ float   getBatteryRealRatedPower (modbus_t *ctx)
     memset( buffer, '\0', sizeof buffer );
     
     if (modbus_read_input_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
-        fprintf(stderr, "getBatteryRealRatedPower() - Read failed: %s\n", modbus_strerror( errno ));
+        Logger_LogError( "getBatteryRealRatedPower() - Read of 1 at 0x311D failed: %s\n", modbus_strerror( errno ));
         return -1;
     }
     
@@ -419,8 +429,8 @@ void    getRealtimeClock (modbus_t *ctx, int *seconds, int *minutes, int *hour, 
     memset( buffer, '\0', sizeof buffer );
     
     if (modbus_read_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
-        fprintf(stderr, "getRealtimeClock() - Read failed: %s\n", modbus_strerror( errno ));
-        return;
+        Logger_LogError( "getRealtimeClock() - Read of 3 at 0x9013 failed: %s\n", modbus_strerror( errno ));
+        ;
     }
     
     *seconds = (buffer[ 0 ] & 0x00FF);
@@ -482,8 +492,8 @@ void    setRealtimeClock (modbus_t *ctx, const int seconds, const int minutes, c
     int         registerAddress = 0x9013;
     int         numBytes = 0x03;
     if (modbus_write_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
-        fprintf(stderr, "setRealTimeClock() - write failed: %s\n", modbus_strerror( errno ));
-        return;
+        Logger_LogError( "setRealTimeClock() - write failed: %s\n", modbus_strerror( errno ));
+        ;
     }
 }
 
@@ -518,8 +528,8 @@ void    setBatteryType ( modbus_t *ctx, int batteryTypeCode)
     int         registerAddress = 0x9000;
     int         numBytes = 0x01;
     if (modbus_write_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
-        fprintf(stderr, "setBatteryType() - write failed: %s\n", modbus_strerror( errno ));
-        return;
+        Logger_LogError( "setBatteryType() - write failed: %s\n", modbus_strerror( errno ));
+        ;
     }
 }
 
@@ -536,8 +546,8 @@ void    setBatteryCapacity (modbus_t *ctx, int batteryCapacityAH)
     int         registerAddress = 0x9001;
     int         numBytes = 0x01;
     if (modbus_write_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
-        fprintf(stderr, "setBatteryCapacity() - write failed: %s\n", modbus_strerror( errno ));
-        return;
+        Logger_LogError( "setBatteryCapacity() - write failed: %s\n", modbus_strerror( errno ));
+        ;
     }    
 }
 
@@ -573,7 +583,7 @@ int getChargingDeviceStatus (modbus_t *ctx)
     
     Logger_LogDebug( "Getting Charging Device Status (Coil 0)\n" );
     if (modbus_read_bits( ctx, registerAddress, numBits, buffer ) == -1) {
-        fprintf(stderr, "getChargingDeviceStatus() - Read bits failed: %s\n", modbus_strerror( errno ));
+        Logger_LogError( "getChargingDeviceStatus() - Read bits at 0x0000 failed: %s\n", modbus_strerror( errno ));
         return -1;
     }
 
@@ -597,8 +607,8 @@ void    setChargingDeviceStatus (modbus_t *ctx, const int value)
     Logger_LogDebug( "Setting Charging Device Status (Coil 0) to %0X\n", value );
     
     if (modbus_write_bit( ctx, registerAddress, value ) == -1) {
-        fprintf(stderr, "setChargingDeviceStatus() - Read bits failed: %s\n", modbus_strerror( errno ));
-        return;
+        Logger_LogError( "setChargingDeviceStatus() - Read bits failed: %s\n", modbus_strerror( errno ));
+        ;
     }
 }
 
@@ -687,7 +697,7 @@ int getOverTemperatureInsideDevice (modbus_t *ctx)
 
     Logger_LogDebug( "Getting overTemperatureInsideDevice\n" );
     if (modbus_read_input_bits( ctx, registerAddress, 1, &value ) == -1) {
-        fprintf(stderr, "read_input_bits on register %X failed: %s\n", registerAddress, modbus_strerror( errno ));
+        Logger_LogError( "read_input_bits on register %X failed: %s\n", registerAddress, modbus_strerror( errno ));
         return -1;
     }
     
@@ -708,7 +718,7 @@ int isNightTime (modbus_t *ctx)
 
     Logger_LogDebug( "Getting isNightTime\n" );
     if (modbus_read_input_bits( ctx, registerAddress, 1, &value ) == -1) {
-        fprintf(stderr, "read_input_bits on register %X failed: %s\n", registerAddress, modbus_strerror( errno ));
+        Logger_LogError( "read_input_bits on register %X failed: %s\n", registerAddress, modbus_strerror( errno ));
         return -1;
     }
     
@@ -777,7 +787,7 @@ int     getCoilValue (modbus_t *ctx, const int coilNum, const char *description)
     
     Logger_LogDebug( "%s\n", description );
     if (modbus_read_bits( ctx, coilNum, numBits, &value ) == -1) {
-        fprintf(stderr, "%s -- read_bits on coil %d failed: %s\n", description, coilNum, modbus_strerror( errno ));
+        Logger_LogError( "%s -- read_bits on coil %d failed: %s\n", description, coilNum, modbus_strerror( errno ));
         return -1;
     }
 
@@ -798,8 +808,8 @@ void    setCoilValue (modbus_t *ctx, const int coilNum, int value, const char *d
     
     Logger_LogDebug( "%s - setting %d to %d\n", description, coilNum, value );
     if (modbus_write_bit( ctx, coilNum, value ) == -1) {
-        fprintf(stderr, "write_bit on coil %d failed: %s\n", coilNum, modbus_strerror( errno ));
-        return;
+        Logger_LogError( "write_bit on coil %d failed: %s\n", coilNum, modbus_strerror( errno ));
+        ;
     }
 }
 
@@ -998,4 +1008,117 @@ char    *getCurrentDateTime (void)
     }
     
     return &currentDateTimeBuffer[ 0 ];
+}
+
+
+
+// ----------------------------------------------------------------------------
+static
+float   float_read_input_register ( modbus_t *ctx,
+                                    const int registerAddress,
+                                    const int numBytes,
+                                    const char *description,
+                                    const float badReadValue)
+{
+    assert( (numBytes == 1) || (numBytes == 2) );
+    
+    uint16_t    buffer[ 32  ];
+    memset( buffer, '\0', sizeof buffer );
+    
+    if (modbus_read_input_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
+        Logger_LogError( "%s - Read of %d bytes at address %X failed: %s\n", description, numBytes, registerAddress, modbus_strerror( errno ));
+        return badReadValue;
+    }
+
+    if (numBytes == 2) {
+        long temp  = buffer[ 0x01 ] << 16;
+        temp |= buffer[ 0x00 ];
+        return (float) temp / 100.0;
+    }
+    
+    return ((float) buffer[ 0x00 ]) / 100.0;
+}
+
+
+// ----------------------------------------------------------------------------
+static
+int int_read_input_register ( modbus_t *ctx,
+                                    const int registerAddress,
+                                    const int numBytes,
+                                    const char *description,
+                                    const int badReadValue)
+{
+    assert( (numBytes == 1) || (numBytes == 2) );
+    
+    uint16_t    buffer[ 32  ];
+    memset( buffer, '\0', sizeof buffer );
+    
+    if (modbus_read_input_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
+        Logger_LogError( "%s - Read of %d bytes at address %X failed: %s\n", description, numBytes, registerAddress, modbus_strerror( errno ));
+        return badReadValue;
+    }
+
+    if (numBytes == 2) {
+        long temp  = buffer[ 0x01 ] << 16;
+        temp |= buffer[ 0x00 ];
+        return (int) temp;
+    }
+    
+    return ((int) buffer[ 0x00 ]);
+}
+
+
+// ----------------------------------------------------------------------------
+static
+float   float_read_register ( modbus_t *ctx,
+                                    const int registerAddress,
+                                    const int numBytes,
+                                    const char *description,
+                                    const float badReadValue)
+{
+    assert( (numBytes == 1) || (numBytes == 2) );
+    
+    uint16_t    buffer[ 32  ];
+    memset( buffer, '\0', sizeof buffer );
+    
+    if (modbus_read_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
+        Logger_LogError( "%s - Read of %d bytes at address %X failed: %s\n", description, numBytes, registerAddress, modbus_strerror( errno ));
+        return badReadValue;
+    }
+
+    if (numBytes == 2) {
+        long temp  = buffer[ 0x01 ] << 16;
+        temp |= buffer[ 0x00 ];
+        return (float) temp / 100.0;
+    }
+    
+    return ((float) buffer[ 0x00 ]) / 100.0;
+}
+
+
+// ----------------------------------------------------------------------------
+static
+int     int_read_register ( modbus_t *ctx,
+                                    const int registerAddress,
+                                    const int numBytes,
+                                    const char *description,
+                                    const int badReadValue)
+{
+    assert( (numBytes == 1) || (numBytes == 2) );
+    
+    uint16_t    buffer[ 32  ];
+    memset( buffer, '\0', sizeof buffer );
+    
+    if (modbus_read_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
+        Logger_LogError( "%s - Read of %d bytes at address %X failed: %s\n", description, numBytes, registerAddress, modbus_strerror( errno ));
+        return badReadValue;
+    }
+
+    if (numBytes == 2) {
+        long temp  = buffer[ 0x01 ] << 16;
+        temp |= buffer[ 0x00 ];
+        return (int) temp;
+    }
+    
+    return ((int) buffer[ 0x00 ]);
 }

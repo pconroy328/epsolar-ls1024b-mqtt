@@ -115,7 +115,7 @@ char *createJSONMessage (modbus_t *ctx, const char *topic, const RatedData_t *ra
 {
     cJSON *message = cJSON_CreateObject();
     cJSON_AddStringToObject( message, "topic", topic );
-    cJSON_AddStringToObject( message, "version", "1.1" );
+    cJSON_AddStringToObject( message, "version", "1.2" );
     
     cJSON_AddStringToObject( message, "dateTime", getCurrentDateTime() );
     cJSON_AddStringToObject( message, "controllerDateTime", setData->realtimeClock );
@@ -218,23 +218,35 @@ char *createJSONMessage (modbus_t *ctx, const char *topic, const RatedData_t *ra
     
     
     char    dtBuffer[ 32 ];
-    snprintf( dtBuffer, sizeof dtBuffer, "%02d:%02d:%02d", setData->turnOnTiming1_seconds, setData->turnOnTiming1_minutes, setData->turnOnTiming1_hours );
+    snprintf( dtBuffer, sizeof dtBuffer, "%02d:%02d:%02d", setData->turnOnTiming1_hours, setData->turnOnTiming1_minutes, setData->turnOnTiming1_seconds );
     cJSON_AddStringToObject( settings, "turnOnTiming1", dtBuffer );
             
-    snprintf( dtBuffer, sizeof dtBuffer, "%02d:%02d:%02d", setData->turnOffTiming1_seconds, setData->turnOffTiming1_minutes, setData->turnOffTiming1_hours );
+    snprintf( dtBuffer, sizeof dtBuffer, "%02d:%02d:%02d", setData->turnOffTiming1_hours, setData->turnOffTiming1_minutes, setData->turnOffTiming1_seconds );
     cJSON_AddStringToObject( settings, "turnOffTiming1", dtBuffer );
             
-    snprintf( dtBuffer, sizeof dtBuffer, "%02d:%02d:%02d", setData->turnOnTiming2_seconds, setData->turnOnTiming2_minutes, setData->turnOnTiming2_hours );
+    snprintf( dtBuffer, sizeof dtBuffer, "%02d:%02d:%02d", setData->turnOnTiming2_hours, setData->turnOnTiming2_minutes, setData->turnOnTiming2_seconds );
     cJSON_AddStringToObject( settings, "turnOnTiming2", dtBuffer );
             
-    snprintf( dtBuffer, sizeof dtBuffer, "%02d:%02d:%02d", setData->turnOffTiming2_seconds, setData->turnOffTiming2_minutes, setData->turnOffTiming2_hours );
+    snprintf( dtBuffer, sizeof dtBuffer, "%02d:%02d:%02d", setData->turnOffTiming2_hours, setData->turnOffTiming2_minutes, setData->turnOffTiming2_seconds );
     cJSON_AddStringToObject( settings, "turnOffTiming2", dtBuffer );
 
-   
-    cJSON_AddNumberToObject( settings, "lengthOfNight", setData->lengthOfNight );
-    cJSON_AddNumberToObject( settings, "batteryRatedVoltageCode", setData->batteryRatedVoltageCode );
-    cJSON_AddNumberToObject( settings, "loadTimingControlSelection", setData->loadTimingControlSelection );
-    cJSON_AddNumberToObject( settings, "defaultLoadOnOffManualMode", setData->defaultLoadOnOffManualMode );
+    //
+    //  Set default values of the whole night - top 8 bits are hours, bottom 8 are minutes
+    snprintf( dtBuffer, sizeof dtBuffer, "%02d:%02d", ((setData->lengthOfNight & 0xFF00) >> 8), (setData->lengthOfNight & 0x00FF) ); 
+    cJSON_AddStringToObject( settings, "lengthOfNight", dtBuffer );
+    
+    
+    cJSON_AddStringToObject( settings, "batteryRatedVoltageCode", (setData->batteryRatedVoltageCode == 0) ? "Auto" : ( (setData->batteryRatedVoltageCode == 1) ? "12V" : "24V") );
+    
+    
+    // cJSON_AddNumberToObject( settings, "loadTimingControlSelection", setData->loadTimingControlSelection );
+    cJSON_AddStringToObject( settings, "loadTimingControlSelection", (setData->batteryRatedVoltageCode == 0) ? "1 Timer" : "2 Timers" );
+    
+    
+    // cJSON_AddNumberToObject( settings, "defaultLoadOnOffManualMode", setData->defaultLoadOnOffManualMode );
+    cJSON_AddStringToObject( settings, "defaultLoadOnOffManualMode", (setData->batteryRatedVoltageCode == 0) ? "Off" : "On" );
+    
+    
     cJSON_AddNumberToObject( settings, "equalizeDuration", setData->equalizeDuration );
     cJSON_AddNumberToObject( settings, "boostDuration", setData->boostDuration );
     cJSON_AddNumberToObject( settings, "dischargingPercentage", setData->dischargingPercentage );

@@ -47,7 +47,7 @@ int main (int argc, char* argv[])
     modbus_t    *ctx;
     char        mqttClientID[ 256 ];
     
-    printf( "LS1024B_MQTT application - version 0.9.0 \n" );
+    printf( "LS1024B_MQTT application - version 0.9.5 (valgrind leak checked) \n" );
 
     parseCommandLine( argc, argv );
     Logger_Initialize( "ls1024b.log", 5 );
@@ -87,13 +87,13 @@ int main (int argc, char* argv[])
     int seconds, minutes, hour, day, month, year;
     getRealtimeClock( ctx, &seconds, &minutes, &hour, &day, &month, &year );
     Logger_LogInfo( "System Clock set to: %02d/%02d/%02d %02d:%02d:%02d\n", month, day, year, hour, minutes, seconds );
-    Logger_LogInfo( "Setting battery capacity to 5AH, type to '1' and loadControlMode to 0x00" );
+    Logger_LogInfo( "Setting battery capacity to 5AH, type to '1' and loadControlMode to 0x00\n" );
     setBatteryCapacity( ctx, 5 );
     setBatteryType( ctx, 1 );
     setLoadControlMode( ctx, 0x00 );
 
-    
-    while (1) {      
+    int i = 0;
+    while (i < 5) {      
         //
         //  every time thru the loop - zero out the structs!
         memset( &ratedData, '\0', sizeof( RatedData_t ) );
@@ -123,11 +123,13 @@ int main (int argc, char* argv[])
         //
         free( jsonMessage );
         sleep( sleepSeconds );
+        i += 1;
     }
     
     MQTT_Teardown( NULL );
     Logger_LogInfo( "Done" );
     modbus_close( ctx );
+    modbus_free( ctx );
     Logger_Terminate();
     
     return (EXIT_SUCCESS);
