@@ -105,6 +105,7 @@ typedef struct  Settings {
     float   underVoltageWarning;
     float   lowVoltageDisconnect;
     float   dischargingLimitVoltage;
+    int     equalizationChargingCycle;
     char    *realtimeClock;
     float   batteryTempWarningUpperLimit;
     float   batteryTempWarningLowerLimit;
@@ -268,6 +269,132 @@ static  void    decodeDischargingStatusBits( RealTimeStatus_t *data, const int v
 static  int     setFloatSettingParameter( modbus_t *ctx, const int registerAddress, const float floatValue );
 static  int     setIntSettingParameter( modbus_t *ctx, const int registerAddress, const int intValue );
 
+
+#if 0
+//------------------------------------------------------------------------------
+//
+// V0.9.5 output
+{  
+   "topic":"LS1024B/1/DATA",
+   "version":"1.2",
+   "dateTime":"2018-08-16T14:50:42-0600",
+   "controllerDateTime":"08/16/18 14:50:42",
+   "isNightTime":false,
+   "batterySOC":100,
+   "pvArrayVoltage":18.62,
+   "pvArrayCurrent":0,
+   "loadVoltage":13.69,
+   "loadCurrent":0.01,
+   "temperatures":{  
+      "unit":"Fahrenheit",                      // * fix spelling
+      "battery":88.59,
+      "case":88.59,
+      "remoteSensor":88.59
+   },
+   "batteryStatus":{  
+      "voltage":"Normal",
+      "temperature":"Normal",
+      "innerResistance":"Normal",
+      "identification":"Correct"
+   },
+   "chargingStatus":{  
+      "status":"Not Charging",
+      "isNormal":true,
+      "isRunning":true,
+      "inputVoltage":"Normal",
+      "MOSFETShort":false,
+      "someMOSFETShort":false,
+      "antiReverseMOSFETShort":false,
+      "inputIsOverCurrent":false,
+      "inputIsOverPressure":false,
+      "loadIsOverCurrent":false,
+      "loadIsShort":false,
+      "loadMOSFETIsShort":false,
+      "pvInputIsShort":false
+   },
+   "dischargingStatus":{  
+      "isNormal":true,
+      "isRunning":true,
+      "inputVoltageStatus":"Normal",
+      "outputPower":"Light Load",
+      "shortCircuit":false,
+      "unableToDischarge":false,
+      "unableToStopDischarging":false,
+      "outputVoltageAbnormal":false,
+      "inputOverpressure":false,
+      "highVoltageSideShort":false,
+      "boostOverpressure":false,
+      "outputOverpressure":false
+   },
+   "settings":{  
+      "batteryType":"Sealed",
+      "batteryCapacity":5,
+      "tempCompensationCoeff":3,
+      "highVoltageDisconnect":16,
+      "chargingLimitVoltage":15,
+      "overVoltageReconnect":15,
+      "equalizationVoltage":14.60,
+      "boostVoltage":14.40,
+      "floatVoltage":13.80,
+      "boostReconnectVoltage":13.20,
+      "lowVoltageReconnect":12.60,
+      "underVoltageRecover":12.20,
+      "underVoltageWarning":12,
+      "lowVoltageDisconnect":11.10,
+      "dischargingLimitVoltage":10.60,
+      // Missing: 0x9016  Interval days of auto equalization charging in cycle  (unit: days) 
+      "batteryTempWarningUpperLimit":65,
+      "batteryTempWarningLowerLimit":615.36,
+      "controllerInnerTempUpperLimit":85,
+      "controllerInnerTempUpperLimitRecover":75,        // After Over Temperature, system recover once it drop to lower than this value
+      "powerComponentTempUpperLimit":85,                // Warning when surface temperature of power components higher than this value, and charging and discharging stop
+      "powerComponentTempUpperLimitRecover":75,
+      "lineImpedence":0,
+              
+      "daytimeThresholdVoltage":5,
+      "lightSignalStartupTime":10,
+      "lighttimeThresholdVoltage":6,
+      "lightSignalCloseDelayTime":10,
+              
+      "localControllingModes":0,
+      "workingTimeLength1":256,
+      "workingTimeLength2":256,
+      "turnOnTiming1":"19:00:00",
+      "turnOffTiming1":"06:00:00",
+      "turnOnTiming2":"19:00:00",
+      "turnOffTiming2":"06:00:00",
+      "lengthOfNight":"09:48",
+      "batteryRatedVoltageCode":"Auto",
+      "loadTimingControlSelection":"1 Timer",
+      "defaultLoadOnOffManualMode":"Off",
+      "equalizeDuration":120,
+      "boostDuration":120,
+      "dischargingPercentage":0,
+      "chargingPercentage":1,
+      "batteryManagementMode":0
+   },
+   "statistics":{  
+      "maximumInputVoltageToday":20.44,
+      "minimumInputVoltageToday":0,
+      "maximumBatteryVoltageToday":14.54,
+      "minimumBatteryVoltageToday":12.85,
+      "consumedEnergyToday":0.01,
+      "consumedEnergyMonth":0.01,
+      "consumedEnergyYear":0.71,
+      "totalConsumedEnergy":1.21,
+      "generatedEnergyToday":0,
+      "generatedEnergyMonth":0.12,
+      "generatedEnergyYear":0.93,
+      "totalGeneratedEnergy":1.58,
+      "batteryVoltage":13.65,
+      "batteryCurrent":0
+   }
+}
+
+
+From the EPSOLAR manual
+        
+#endif
 
 #ifdef __cplusplus
 }

@@ -10,7 +10,7 @@
 
 static    char    rtc[ 40 ];
 
-
+#if 0
 // -----------------------------------------------------------------------------
 void    getUsefulData (modbus_t *ctx, UsefulData_t *uData)
 {
@@ -29,6 +29,7 @@ void    getUsefulData (modbus_t *ctx, UsefulData_t *uData)
     uData->loadCurrent = rtData.loadCurrent;
     uData->loadVoltage = rtData.loadVoltage;
 }
+#endif 
 
 // -----------------------------------------------------------------------------
 void    getRatedData (modbus_t *ctx, RatedData_t *data)
@@ -256,7 +257,6 @@ void    getSettings (modbus_t *ctx, Settings_t *data)
     data->floatVoltage            = ((float) buffer[ 0x08 ]) / 100.0;
     data->boostReconnectVoltage   = ((float) buffer[ 0x09 ]) / 100.0;
 
-    //  Our LS1024B controller doesn't seem to support any register data above 0x0A
     data->lowVoltageReconnect     = ((float) buffer[ 0x0A ]) / 100.0;
     data->underVoltageRecover     = ((float) buffer[ 0x0B ]) / 100.0;
     data->underVoltageWarning     = ((float) buffer[ 0x0C ]) / 100.0;
@@ -266,7 +266,7 @@ void    getSettings (modbus_t *ctx, Settings_t *data)
     memset( rtc, '\0', sizeof rtc );
     data->realtimeClock = getRealtimeClockStr( ctx, rtc, sizeof rtc );
     
-    
+    data->equalizationChargingCycle = int_read_register( ctx, 0x9016, 1, "equalizationChargingCycle @ 0x9016", -1 );
     
     registerAddress = 0x9017;
     numBytes = 7;
@@ -275,12 +275,12 @@ void    getSettings (modbus_t *ctx, Settings_t *data)
         Logger_LogError( "getSettings() - Read of 4 starting at 0x9017 failed: %s\n", modbus_strerror( errno ));
         ;
     }
-    data->batteryTempWarningUpperLimit = ((float) buffer[ 0x00 ]) / 100.0;
-    data->batteryTempWarningLowerLimit = ((float) buffer[ 0x01 ]) / 100.0;
-    data->controllerInnerTempUpperLimit = ((float) buffer[ 0x02 ]) / 100.0;
-    data->controllerInnerTempUpperLimitRecover = ((float) buffer[ 0x03 ]) / 100.0;
-    data->powerComponentTempUpperLimit = ((float) buffer[ 0x04 ]) / 100.0;
-    data->powerComponentTempUpperLimitRecover  = ((float) buffer[ 0x05 ]) / 100.0;
+    data->batteryTempWarningUpperLimit = C2F( ((float) buffer[ 0x00 ]) / 100.0 );
+    data->batteryTempWarningLowerLimit = C2F( ((float) buffer[ 0x01 ]) / 100.0 );
+    data->controllerInnerTempUpperLimit = C2F( ((float) buffer[ 0x02 ]) / 100.0 );
+    data->controllerInnerTempUpperLimitRecover = C2F( ((float) buffer[ 0x03 ]) / 100.0 );
+    data->powerComponentTempUpperLimit = C2F( ((float) buffer[ 0x04 ]) / 100.0 );
+    data->powerComponentTempUpperLimitRecover  = C2F( ((float) buffer[ 0x05 ]) / 100.0 );
     data->lineImpedence = ((float) buffer[ 0x06 ]) / 100.0;
     
     registerAddress = 0x901E;
@@ -333,25 +333,6 @@ void    getSettings (modbus_t *ctx, Settings_t *data)
     data->turnOffTiming2_minutes = buffer[ 0x0A ];
     data->turnOffTiming2_hours   = buffer[ 0x0B ];
 
-#if 0
-    registerAddress = 0x9065;
-    numBytes = 2;
-    memset( buffer, '\0', sizeof buffer );
-    if (modbus_read_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
-        Logger_LogError( "getSettings() - Read of 9 starting at 0x9065 failed: %s\n", modbus_strerror( errno ));
-        ;
-    }
-    
-    data->lengthOfNight             = buffer[ 0x00 ];
-    data->batteryRatedVoltageCode   = buffer[ 0x01 ];
-    data->loadTimingControlSelection = buffer[ 0x02 ];
-    data->defaultLoadOnOffManualMode = buffer[ 0x03 ];
-    data->equalizeDuration          = ((float) buffer[ 0x04 ]) / 100.0;
-    data->boostDuration             = ((float) buffer[ 0x05 ]) / 100.0;
-    data->dischargingPercentage     = buffer[ 0x06 ]; 
-    data->chargingPercentage        = buffer[ 0x07 ];
-    data->batteryManagementMode     = buffer[ 0x08 ];
-#endif
     
     data->lengthOfNight = int_read_register( ctx, 0x9065, 1, "Length of Night @ 0x9065", -1 );
     data->batteryRatedVoltageCode = int_read_register( ctx, 0x9067, 1, "batteryRatedVoltageCode @ 0x9067", -1 );
@@ -363,7 +344,7 @@ void    getSettings (modbus_t *ctx, Settings_t *data)
     data->dischargingPercentage     = float_read_register( ctx, 0x906D, 1, "dischargingPercentage @ 0x906D", -1.0 );
     data->chargingPercentage        = float_read_register( ctx, 0x906E, 1, "chargingPercentage @ 0x906E", -1.0 );
     
-    data->batteryManagementMode = int_read_register( ctx, 0x9070, 1, "batteryManagementMode @ 0x9070", -1.0 );
+    data->batteryManagementMode = int_read_register( ctx, 0x9070, 1, "batteryManagementMode @ 0x9070", -1 );
 }
 
 

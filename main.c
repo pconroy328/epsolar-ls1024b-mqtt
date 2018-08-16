@@ -47,10 +47,10 @@ int main (int argc, char* argv[])
     modbus_t    *ctx;
     char        mqttClientID[ 256 ];
     
-    printf( "LS1024B_MQTT application - version 0.9.5 (valgrind leak checked) \n" );
+    printf( "LS1024B_MQTT application - version 0.9.6 (temps in F, typo, missed a setting) \n" );
 
     parseCommandLine( argc, argv );
-    Logger_Initialize( "ls1024b.log", 5 );
+    Logger_Initialize( "ls1024b.log", 3 );
     
     //
     // Need to create a unique client ID

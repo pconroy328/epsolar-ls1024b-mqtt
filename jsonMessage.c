@@ -115,7 +115,7 @@ char *createJSONMessage (modbus_t *ctx, const char *topic, const RatedData_t *ra
 {
     cJSON *message = cJSON_CreateObject();
     cJSON_AddStringToObject( message, "topic", topic );
-    cJSON_AddStringToObject( message, "version", "1.2" );
+    cJSON_AddStringToObject( message, "version", "1.3" );
     
     cJSON_AddStringToObject( message, "dateTime", getCurrentDateTime() );
     cJSON_AddStringToObject( message, "controllerDateTime", setData->realtimeClock );
@@ -129,7 +129,7 @@ char *createJSONMessage (modbus_t *ctx, const char *topic, const RatedData_t *ra
     //
     //  Temperatures - nested object
     cJSON *temperatures = cJSON_CreateObject();
-    cJSON_AddStringToObject( temperatures, "unit", "Farenheit" );
+    cJSON_AddStringToObject( temperatures, "unit", "Fahrenheit" );
     cJSON_AddNumberToObject( temperatures, "battery", rtData->batteryTemp );
     cJSON_AddNumberToObject( temperatures, "case", rtData->caseTemp );
     cJSON_AddNumberToObject( temperatures, "remoteSensor", rtData->remoteBatteryTemperature );
@@ -186,18 +186,24 @@ char *createJSONMessage (modbus_t *ctx, const char *topic, const RatedData_t *ra
     cJSON_AddStringToObject( settings, "batteryType", setData->batteryType );
     cJSON_AddNumberToObject( settings, "batteryCapacity", setData->batteryCapacity );
     cJSON_AddNumberToObject( settings, "tempCompensationCoeff", setData->tempCompensationCoeff );
+    
     cJSON_AddNumberToObject( settings, "highVoltageDisconnect", setData->highVoltageDisconnect );
     cJSON_AddNumberToObject( settings, "chargingLimitVoltage", setData->chargingLimitVoltage );
     cJSON_AddNumberToObject( settings, "overVoltageReconnect", setData->overVoltageReconnect );
+    
     cJSON_AddNumberToObject( settings, "equalizationVoltage", setData->equalizationVoltage );
     cJSON_AddNumberToObject( settings, "boostVoltage", setData->boostVoltage );
     cJSON_AddNumberToObject( settings, "floatVoltage", setData->floatVoltage );
+    
     cJSON_AddNumberToObject( settings, "boostReconnectVoltage", setData->boostReconnectVoltage );
     cJSON_AddNumberToObject( settings, "lowVoltageReconnect", setData->lowVoltageReconnect );
     cJSON_AddNumberToObject( settings, "underVoltageRecover", setData->underVoltageRecover );
     cJSON_AddNumberToObject( settings, "underVoltageWarning", setData->underVoltageWarning );
     cJSON_AddNumberToObject( settings, "lowVoltageDisconnect", setData->lowVoltageDisconnect );
+    
     cJSON_AddNumberToObject( settings, "dischargingLimitVoltage", setData->dischargingLimitVoltage );
+    cJSON_AddNumberToObject( settings, "equalizationChargingCycle", setData->equalizationChargingCycle );
+    
     cJSON_AddNumberToObject( settings, "batteryTempWarningUpperLimit", setData->batteryTempWarningUpperLimit );
     cJSON_AddNumberToObject( settings, "batteryTempWarningLowerLimit", setData->batteryTempWarningLowerLimit );
  
