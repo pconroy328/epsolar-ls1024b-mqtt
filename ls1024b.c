@@ -49,6 +49,10 @@ static  int     setIntSettingParameter( modbus_t *ctx, const int registerAddress
 
 
 
+//
+//
+// These functions are named after the sections of the EPSOLAR documentation
+
 // -----------------------------------------------------------------------------
 void    getRatedData (modbus_t *ctx, RatedData_t *data)
 {
@@ -88,10 +92,10 @@ void    getRealTimeData (modbus_t *ctx, RealTimeData_t *data)
     data->batteryRealRatedPower = float_read_input_register( ctx, 0x311D, 1, "Battery Real Rated Power", -1.0 );
 }
 
+
 // -----------------------------------------------------------------------------
 void    getRealTimeStatus (modbus_t *ctx, RealTimeStatus_t *data)
-{
-   
+{   
     data->batteryStatusValue =  int_read_input_register( ctx, 0x3200, 1, "Battery Status", 0xFFFF );
     decodeBatteryStatusBits( data, data->batteryStatusValue );
     
@@ -102,13 +106,14 @@ void    getRealTimeStatus (modbus_t *ctx, RealTimeStatus_t *data)
     decodeDischargingStatusBits( data, data->dischargingStatusValue );
 }
 
+
 // -----------------------------------------------------------------------------
 void    getStatisticalParameters (modbus_t *ctx, StatisticalParameters_t *data)
 {
-     data->maximumInputVoltageToday = float_read_input_register( ctx, 0x3300, 1, "Max PV Voltage Today", -1.0 );
-     data->minimumInputVoltageToday = float_read_input_register( ctx, 0x3301, 1, "Min PV Voltage Today", -1.0 );
-     data->maximumBatteryVoltageToday = float_read_input_register( ctx, 0x3302, 1, "Max PV Voltage Today", -1.0 );
-     data->minimumBatteryVoltageToday = float_read_input_register( ctx, 0x3303, 1, "Min PV Voltage Today", -1.0 );
+    data->maximumInputVoltageToday = float_read_input_register( ctx, 0x3300, 1, "Max PV Voltage Today", -1.0 );
+    data->minimumInputVoltageToday = float_read_input_register( ctx, 0x3301, 1, "Min PV Voltage Today", -1.0 );
+    data->maximumBatteryVoltageToday = float_read_input_register( ctx, 0x3302, 1, "Max PV Voltage Today", -1.0 );
+    data->minimumBatteryVoltageToday = float_read_input_register( ctx, 0x3303, 1, "Min PV Voltage Today", -1.0 );
 
     data->consumedEnergyToday = float_read_input_register( ctx, 0x3304, 2, "Consumed Energy Today", -1.0 );
     data->consumedEnergyMonth = float_read_input_register( ctx, 0x3306, 2, "Consumed Energy This Month", -1.0 );
@@ -125,20 +130,10 @@ void    getStatisticalParameters (modbus_t *ctx, StatisticalParameters_t *data)
     data->batteryCurrent = float_read_input_register( ctx, 0x331B, 2, "Battery Current", -1.0 );
 }
 
+
 // -----------------------------------------------------------------------------
 void    getSettings (modbus_t *ctx, Settings_t *data)
 {
-    int         registerAddress = 0x9000;
-    int         numBytes = 0x0F;                    // 0x10 and up gives 'illegal data address' error
-    uint16_t    buffer[ 32 ];
-
-    memset( buffer, '\0', sizeof buffer );
-    
-    if (modbus_read_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
-        Logger_LogError( "getSettings() - Read of 0x0F address 0x9000 failed: %s\n", modbus_strerror( errno ));
-        ;
-    }
-    
     data->batteryType =  batteryTypeToString( int_read_register( ctx, 0x9000, 1, "Battery Type", -1 ) );
     data->batteryCapacity = int_read_register( ctx, 0x9001, 1, "Battery Capacity", -1 );
     
@@ -170,15 +165,15 @@ void    getSettings (modbus_t *ctx, Settings_t *data)
     data->controllerInnerTempUpperLimitRecover = C2F( float_read_register( ctx, 0x901A, 1, "Controller Inner Temperature Lower Limit", -1.0 ) );
     
     
-    data->daytimeThresholdVoltage    = float_read_register( ctx, 0x901E, 1, "Daytime Threashold Voltage (Sundown)", -1.0 );
+    data->daytimeThresholdVoltage    = float_read_register( ctx, 0x901E, 1, "Daytime Threshold Voltage (Sundown)", -1.0 );
     data->lightSignalStartupTime     = int_read_register( ctx, 0x901F, 1, "Light Signal Startup Delay Time (Night)", -1 );
-    data->lighttimeThresholdVoltage  = float_read_register( ctx, 0x9020, 1, "Night Time Threashold Voltage (Sunrise)", -1.0 );
+    data->lighttimeThresholdVoltage  = float_read_register( ctx, 0x9020, 1, "Night Time Threshold Voltage (Sunrise)", -1.0 );
     data->lightSignalCloseDelayTime  =  int_read_register( ctx, 0x9021, 1, "Light Signal Close Delay Time (Day)", -1 );
 
     
     data->localControllingModes = int_read_register( ctx, 0x903D, 1, "Light Controlling Modes", -1 );
-    data->workingTimeLength1    = int_read_register( ctx, 0x903E, 1, "Workign Time Length One", -1 );
-    data->workingTimeLength2    = int_read_register( ctx, 0x903F, 1, "Workign Time Length Two", -1 );
+    data->workingTimeLength1    = int_read_register( ctx, 0x903E, 1, "Working Time Length One", -1 );
+    data->workingTimeLength2    = int_read_register( ctx, 0x903F, 1, "Working Time Length Two", -1 );
 
 
     data->turnOnTiming1_seconds = int_read_register( ctx, 0x9042, 1, "Turn On Timing One (Seconds)", -1 );
@@ -204,7 +199,7 @@ void    getSettings (modbus_t *ctx, Settings_t *data)
     //  0x9066 doesn't apply to my LS1024B
     //data->deviceConfigureMainPower = int_read_register( ctx, 0x9066, 1, "Device Configuration of Main Power Supply", -1 );
     
-    data->batteryRatedVoltageCode = int_read_register( ctx, 0x9067, 1, "batteryRatedVoltageCode @ 0x9067", -1 );
+    data->batteryRatedVoltageCode   = int_read_register( ctx, 0x9067, 1, "batteryRatedVoltageCode @ 0x9067", -1 );
     
     data->defaultLoadOnOffManualMode = int_read_register( ctx, 0x906A, 1, "defaultLoadOnOffManualMode @ 0x906A", -1 );
     data->equalizeDuration          = int_read_register( ctx, 0x906B, 1, "equalizeDuration @ 0x906B", -1 );
@@ -217,25 +212,6 @@ void    getSettings (modbus_t *ctx, Settings_t *data)
 
 
 
-#if 0
-// -----------------------------------------------------------------------------
-float   getRemoteBatteryTemperature (modbus_t *ctx)
-{
-    int         registerAddress = 0x311B;
-    int         numBytes = 1; 
-    uint16_t    buffer[ 32 ];
-    
-    memset( buffer, '\0', sizeof buffer );
-    
-    if (modbus_read_input_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
-        Logger_LogError( "getRemoteBatteryTemp() - Read of 1 at 0x311B failed: %s\n", modbus_strerror( errno ));
-        return -1;
-    }
-    //printf( "       remote battery temp sent back: %0x (hex)  %d\n", buffer[ 0 ], buffer[ 0 ] );
-    return C2F( (float) buffer[ 0 ] / 100.0 );
-}
-#endif 
-
 // -----------------------------------------------------------------------------
 void    getRealtimeClock (modbus_t *ctx, int *seconds, int *minutes, int *hour, int *day, int *month, int *year)
 {
@@ -247,7 +223,6 @@ void    getRealtimeClock (modbus_t *ctx, int *seconds, int *minutes, int *hour, 
     
     if (modbus_read_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
         Logger_LogError( "getRealtimeClock() - Read of 3 at 0x9013 failed: %s\n", modbus_strerror( errno ));
-        ;
     }
     
     *seconds = (buffer[ 0 ] & 0x00FF);
@@ -258,6 +233,7 @@ void    getRealtimeClock (modbus_t *ctx, int *seconds, int *minutes, int *hour, 
     *year = ((buffer[ 2 ] & 0xFF00) >> 8);
 }
 
+
 // -----------------------------------------------------------------------------
 char    *getRealtimeClockStr (modbus_t *ctx, char *buffer, const int buffSize)
 {
@@ -267,6 +243,7 @@ char    *getRealtimeClockStr (modbus_t *ctx, char *buffer, const int buffSize)
     snprintf( buffer, buffSize, "%02d/%02d/%02d %02d:%02d:%02d", month, day, year, hour, minutes, seconds );
     return buffer;
 }
+
 
 // -----------------------------------------------------------------------------
 void    setRealtimeClock (modbus_t *ctx, const int seconds, const int minutes, const int hour, const int day, const int month, const int year)
@@ -285,9 +262,6 @@ void    setRealtimeClock (modbus_t *ctx, const int seconds, const int minutes, c
     buffer[ 1 ] = (day << 8) | hour;
     buffer[ 2 ] = (year << 8) | month;
     
-    //printf( "We're going to write this to the RTC:, %02d/%02d/%04d  %02d:%02d:%02d\n", day, month, year, hour, minutes, seconds );
-    //printf( "Buffer is   %X   %X   %x\n", buffer[ 0 ], buffer[ 1 ], buffer[ 2 ] );
-
     int se = (buffer[ 0 ] & 0x00FF);
     int mi = ((buffer[ 0 ] & 0xFF00) >> 8);
     int hr = (buffer[ 1 ] & 0x00FF);
@@ -306,7 +280,6 @@ void    setRealtimeClock (modbus_t *ctx, const int seconds, const int minutes, c
     int         numBytes = 0x03;
     if (modbus_write_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
         Logger_LogError( "setRealTimeClock() - write failed: %s\n", modbus_strerror( errno ));
-        ;
     }
 }
 
@@ -328,6 +301,7 @@ void    setRealtimeClockToNow (modbus_t *ctx)
     setRealtimeClock( ctx, seconds, minutes, hour, day, month, year );
 }
 
+
 //------------------------------------------------------------------------------
 void    setBatteryType ( modbus_t *ctx, int batteryTypeCode)
 {
@@ -342,9 +316,9 @@ void    setBatteryType ( modbus_t *ctx, int batteryTypeCode)
     int         numBytes = 0x01;
     if (modbus_write_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
         Logger_LogError( "setBatteryType() - write failed: %s\n", modbus_strerror( errno ));
-        ;
     }
 }
+
 
 //------------------------------------------------------------------------------
 void    setBatteryCapacity (modbus_t *ctx, int batteryCapacityAH)
@@ -360,7 +334,6 @@ void    setBatteryCapacity (modbus_t *ctx, int batteryCapacityAH)
     int         numBytes = 0x01;
     if (modbus_write_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
         Logger_LogError( "setBatteryCapacity() - write failed: %s\n", modbus_strerror( errno ));
-        ;
     }    
 }
 
@@ -369,6 +342,7 @@ void    setLoadControlMode (modbus_t *ctx, int value)
 {
     setIntSettingParameter( ctx, 0x903D, value );
 }
+
 
 //------------------------------------------------------------------------------
 static
@@ -518,13 +492,14 @@ int isNightTime (modbus_t *ctx)
     return ( (value & 0b00000001) == 1 );    
 }
 
+
 //------------------------------------------------------------------------------
 void    setChargingDeviceOn (modbus_t *ctx)
 {
     int     coilNum = 0x00;
-    setCoilValue( ctx, coilNum, 1, "Control Charging Device - Set On (Coil 0x00)" );
-    
+    setCoilValue( ctx, coilNum, 1, "Control Charging Device - Set On (Coil 0x00)" );    
 }
+
 
 //------------------------------------------------------------------------------
 void    setChargingDeviceOff (modbus_t *ctx)
@@ -544,6 +519,7 @@ void    setLoadDeviceOn (modbus_t *ctx)
     setCoilValue( ctx, 0x02, 1, "Setting Load Control to On (Coil 0x02)" );    
 }
 
+
 //------------------------------------------------------------------------------
 void    setLoadDeviceOff (modbus_t *ctx)
 {
@@ -553,6 +529,7 @@ void    setLoadDeviceOff (modbus_t *ctx)
     // The turn it on
     setCoilValue( ctx, 0x02, 0, "Setting Load Control to Off (Coil 0x02)" );    
 }
+
 
 //------------------------------------------------------------------------------
 static
@@ -598,7 +575,6 @@ void    setCoilValue (modbus_t *ctx, const int coilNum, int value, const char *d
     Logger_LogDebug( "%s - setting %d to %d\n", description, coilNum, value );
     if (modbus_write_bit( ctx, coilNum, value ) == -1) {
         Logger_LogError( "write_bit on coil %d failed: %s\n", coilNum, modbus_strerror( errno ));
-        ;
     }
 }
 
@@ -768,35 +744,6 @@ int     setIntSettingParameter (modbus_t *ctx, int registerAddress, int intValue
     }    
     
     return TRUE;
-}
-
-
-// -----------------------------------------------------------------------------
-static  char    currentDateTimeBuffer[ 80 ];
-char    *getCurrentDateTime (void)
-{
-    //
-    // Something quick and dirty... Fix this later - thread safe
-    time_t  current_time;
-    struct  tm  *tmPtr;
- 
-    memset( currentDateTimeBuffer, '\0', sizeof currentDateTimeBuffer );
-    
-    /* Obtain current time as seconds elapsed since the Epoch. */
-    current_time = time( NULL );
-    if (current_time > 0) {
-        /* Convert to local time format. */
-        tmPtr = localtime( &current_time );
- 
-        if (tmPtr != NULL) {
-            strftime( currentDateTimeBuffer,
-                    sizeof currentDateTimeBuffer,
-                    "%FT%T%z",                           // ISO 8601 Format
-                    tmPtr );
-        }
-    }
-    
-    return &currentDateTimeBuffer[ 0 ];
 }
 
 

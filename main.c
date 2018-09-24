@@ -41,13 +41,16 @@ extern char *createJSONMessage (modbus_t *ctx, const char *topic, const RatedDat
         const RealTimeData_t *rtData, const RealTimeStatus_t *rtStatusData, 
         const Settings_t *setData, const StatisticalParameters_t *stats);
 
+
+
+
 // -----------------------------------------------------------------------------
 int main (int argc, char* argv[]) 
 {
     modbus_t    *ctx;
     // char        mqttClientID[ 256 ];
     
-    printf( "LS1024B_MQTT application - version 1.5.1 (individual modbus calls)\n" );
+    printf( "LS1024B_MQTT application - version 1.5.2 (individual modbus calls)\n" );
 
     parseCommandLine( argc, argv );
     Logger_Initialize( "ls1024b.log", 3 );
@@ -174,4 +177,32 @@ void    parseCommandLine (int argc, char *argv[])
             default:    showHelp();     break;
         }
     }
+}
+
+// -----------------------------------------------------------------------------
+static  char    currentDateTimeBuffer[ 80 ];
+char    *getCurrentDateTime (void)
+{
+    //
+    // Something quick and dirty... Fix this later - thread safe
+    time_t  current_time;
+    struct  tm  *tmPtr;
+ 
+    memset( currentDateTimeBuffer, '\0', sizeof currentDateTimeBuffer );
+    
+    /* Obtain current time as seconds elapsed since the Epoch. */
+    current_time = time( NULL );
+    if (current_time > 0) {
+        /* Convert to local time format. */
+        tmPtr = localtime( &current_time );
+ 
+        if (tmPtr != NULL) {
+            strftime( currentDateTimeBuffer,
+                    sizeof currentDateTimeBuffer,
+                    "%FT%T%z",                           // ISO 8601 Format
+                    tmPtr );
+        }
+    }
+    
+    return &currentDateTimeBuffer[ 0 ];
 }

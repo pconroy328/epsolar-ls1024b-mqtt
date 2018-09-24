@@ -110,6 +110,9 @@
 #include "cJSON.h"
 #include "ls1024b.h"
 
+extern char    *getCurrentDateTime( void );
+
+
 // -----------------------------------------------------------------------------
 char *createJSONMessage (modbus_t *ctx, const char *topic, const RatedData_t *ratedData, const RealTimeData_t *rtData, const RealTimeStatus_t *rtStatusData, const Settings_t *setData, const StatisticalParameters_t *stats)
 {
