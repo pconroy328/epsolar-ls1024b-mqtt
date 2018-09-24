@@ -47,7 +47,7 @@ int main (int argc, char* argv[])
     modbus_t    *ctx;
     char        mqttClientID[ 256 ];
     
-    printf( "LS1024B_MQTT application - version 0.9.6 (temps in F, typo, missed a setting) \n" );
+    printf( "LS1024B_MQTT application - version 1.5 (individual modbus calls)\n" );
 
     parseCommandLine( argc, argv );
     Logger_Initialize( "ls1024b.log", 3 );
@@ -92,8 +92,7 @@ int main (int argc, char* argv[])
     setBatteryType( ctx, 1 );
     setLoadControlMode( ctx, 0x00 );
 
-    int i = 0;
-    while (i < 5) {      
+    while (TRUE) {      
         //
         //  every time thru the loop - zero out the structs!
         memset( &ratedData, '\0', sizeof( RatedData_t ) );
@@ -101,13 +100,17 @@ int main (int argc, char* argv[])
         memset( &realTimeStatusData, '\0', sizeof( RealTimeStatus_t ) );
         memset( &settingsData, '\0', sizeof( Settings_t ) );
         memset( &statisticalParametersData, '\0', sizeof( StatisticalParameters_t ) );
-        
+       
+        //
+        // make the modbus calls to pull the data 
         getRatedData( ctx, &ratedData );
         getRealTimeData( ctx, &realTimeData );
         getRealTimeStatus( ctx, &realTimeStatusData);
         getSettings( ctx, &settingsData );
         getStatisticalParameters( ctx, &statisticalParametersData );
         
+        //
+        // craft a JSON message from the data 
         char    *jsonMessage = createJSONMessage( ctx, 
                                             fullTopic,
                                             &ratedData, 
@@ -116,14 +119,13 @@ int main (int argc, char* argv[])
                                             &settingsData,
                                             &statisticalParametersData
                 );
-        
+       
+        //
+        // Publish it to our MQTT broker 
         MQTT_PublishData( fullTopic, jsonMessage, strlen( jsonMessage ) );
         
-        //
-        //
         free( jsonMessage );
         sleep( sleepSeconds );
-        i += 1;
     }
     
     MQTT_Teardown( NULL );
@@ -135,6 +137,7 @@ int main (int argc, char* argv[])
     return (EXIT_SUCCESS);
 }
 
+// -----------------------------------------------------------------------------
 static
 void    showHelp()
 {
@@ -171,5 +174,4 @@ void    parseCommandLine (int argc, char *argv[])
             default:    showHelp();     break;
         }
     }
-
 }
