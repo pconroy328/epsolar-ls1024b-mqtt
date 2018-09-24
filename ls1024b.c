@@ -211,7 +211,9 @@ void    getSettings (modbus_t *ctx, Settings_t *data)
 }
 
 
-
+// -----------------------------------------------------------------------------
+//
+//  Set Parameters
 // -----------------------------------------------------------------------------
 void    getRealtimeClock (modbus_t *ctx, int *seconds, int *minutes, int *hour, int *day, int *month, int *year)
 {
@@ -306,41 +308,315 @@ void    setRealtimeClockToNow (modbus_t *ctx)
 void    setBatteryType ( modbus_t *ctx, int batteryTypeCode)
 {
     assert( batteryTypeCode >= 0x00 && batteryTypeCode <= 0x03 );
-
-    uint16_t    buffer[ 2 ];
-   
-    memset( buffer, '\0', sizeof buffer );
-    buffer[ 0 ] = batteryTypeCode;
+    setIntSettingParameter( ctx, 0x9000, batteryTypeCode );
+}    
     
-    int         registerAddress = 0x9000;
-    int         numBytes = 0x01;
-    if (modbus_write_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
-        Logger_LogError( "setBatteryType() - write failed: %s\n", modbus_strerror( errno ));
-    }
-}
 
 
 //------------------------------------------------------------------------------
 void    setBatteryCapacity (modbus_t *ctx, int batteryCapacityAH)
 {
     assert( batteryCapacityAH >= 0x00 );
-
-    uint16_t    buffer[ 2 ];
-   
-    memset( buffer, '\0', sizeof buffer );
-    buffer[ 0 ] = batteryCapacityAH;
-    
-    int         registerAddress = 0x9001;
-    int         numBytes = 0x01;
-    if (modbus_write_registers( ctx, registerAddress, numBytes, buffer ) == -1) {
-        Logger_LogError( "setBatteryCapacity() - write failed: %s\n", modbus_strerror( errno ));
-    }    
+    setIntSettingParameter( ctx, 0x9001, batteryCapacityAH );
 }
 
 //------------------------------------------------------------------------------
-void    setLoadControlMode (modbus_t *ctx, int value)
+void    setTempertureCompensationCoefficient (modbus_t *ctx, int value)
 {
+    assert( value >= 0x00  && value <= 0x09);
+    setIntSettingParameter( ctx, 0x9002, value );
+}
+//------------------------------------------------------------------------------
+void    setHighVoltageDisconnect (modbus_t *ctx, float value)
+{
+    //
+    //  Manual says 'User' must be between 9 and 17 volts
+    assert( value >= 9.0  && value <= 17.0);
+    setFloatSettingParameter( ctx, 0x9003, value );
+}
+
+//------------------------------------------------------------------------------
+void    setChargingLimitVoltage (modbus_t *ctx, float value)
+{
+    //
+    //  Manual says 'User' must be between 9 and 17 volts
+    assert( value >= 9.0  && value <= 17.0);
+    setFloatSettingParameter( ctx, 0x9004, value );
+}
+
+//------------------------------------------------------------------------------
+void    setOverVoltageReconnect (modbus_t *ctx, float value)
+{
+    //
+    //  Manual says 'User' must be between 9 and 17 volts
+    assert( value >= 9.0  && value <= 17.0);
+    setFloatSettingParameter( ctx, 0x9005, value );
+}
+
+//------------------------------------------------------------------------------
+void    setEqualizationVoltage (modbus_t *ctx, float value)
+{
+    //
+    //  Manual says 'User' must be between 9 and 17 volts
+    assert( value >= 9.0  && value <= 17.0);
+    setFloatSettingParameter( ctx, 0x9006, value );
+}
+
+//------------------------------------------------------------------------------
+void    setBoostVoltage (modbus_t *ctx, float value)
+{
+    //
+    //  Manual says 'User' must be between 9 and 17 volts
+    assert( value >= 9.0  && value <= 17.0);
+    setFloatSettingParameter( ctx, 0x9007, value );
+}
+
+//------------------------------------------------------------------------------
+void    setFloatVoltage (modbus_t *ctx, float value)
+{
+    //
+    //  Manual says 'User' must be between 9 and 17 volts
+    assert( value >= 9.0  && value <= 17.0);
+    setFloatSettingParameter( ctx, 0x9008, value );
+}
+
+//------------------------------------------------------------------------------
+void    setBoostReconnectVoltage (modbus_t *ctx, float value)
+{
+    //
+    //  Manual says 'User' must be between 9 and 17 volts
+    assert( value >= 9.0  && value <= 17.0);
+    setFloatSettingParameter( ctx, 0x9009, value );
+}
+
+//------------------------------------------------------------------------------
+void    setLowVoltageReconnect (modbus_t *ctx, float value)
+{
+    //
+    //  Manual says 'User' must be between 9 and 17 volts
+    assert( value >= 9.0  && value <= 17.0);
+    setFloatSettingParameter( ctx, 0x900A, value );
+}
+
+//------------------------------------------------------------------------------
+void    setUnderVoltageRecover (modbus_t *ctx, float value)
+{
+    //
+    //  Manual says 'User' must be between 9 and 17 volts
+    assert( value >= 9.0  && value <= 17.0);
+    setFloatSettingParameter( ctx, 0x900B, value );
+}
+
+//------------------------------------------------------------------------------
+void    setUnderVoltageWarning (modbus_t *ctx, float value)
+{
+    //
+    //  Manual says 'User' must be between 9 and 17 volts
+    assert( value >= 9.0  && value <= 17.0);
+    setFloatSettingParameter( ctx, 0x900C, value );
+}
+
+//------------------------------------------------------------------------------
+void    setLowVoltageDisconnect (modbus_t *ctx, float value)
+{
+    //
+    //  Manual says 'User' must be between 9 and 17 volts
+    assert( value >= 9.0  && value <= 17.0);
+    setFloatSettingParameter( ctx, 0x900D, value );
+}
+
+//------------------------------------------------------------------------------
+void    setDischargingLimitVoltage (modbus_t *ctx, float value)
+{
+    //
+    //  Manual says 'User' must be between 9 and 17 volts
+    assert( value >= 9.0  && value <= 17.0);
+    setFloatSettingParameter( ctx, 0x900E, value );
+}
+
+//------------------------------------------------------------------------------
+void    setBatteryTemperatureWarningUpperLimit (modbus_t *ctx, float value)
+{
+    setFloatSettingParameter( ctx, 0x9017, value );
+}
+
+//------------------------------------------------------------------------------
+void    setBatteryTemperatureWarningLowerLimit (modbus_t *ctx, float value)
+{
+    setFloatSettingParameter( ctx, 0x9018, value );
+}
+
+//------------------------------------------------------------------------------
+void    setControllerInnerTemperatureUpperLimit (modbus_t *ctx, float value)
+{
+    setFloatSettingParameter( ctx, 0x9019, value );
+}
+
+//------------------------------------------------------------------------------
+void    setControllerInnerTemperatureUpperLimitRecover (modbus_t *ctx, float value)
+{
+    setFloatSettingParameter( ctx, 0x901A, value );
+}
+
+//------------------------------------------------------------------------------
+void    setDayTimeThresholdVoltage (modbus_t *ctx, float value)
+{
+    setFloatSettingParameter( ctx, 0x901E, value );
+}
+
+//------------------------------------------------------------------------------
+void    setLightSignalStartupDelayTime (modbus_t *ctx, int value)
+{
+    setIntSettingParameter( ctx, 0x901F, value );
+}
+
+//------------------------------------------------------------------------------
+void    setNightTimeThresholdVoltage (modbus_t *ctx, float value)
+{
+    setFloatSettingParameter( ctx, 0x9020, value );
+}
+
+//------------------------------------------------------------------------------
+void    setLightSignalCloseDelayTime (modbus_t *ctx, int value)
+{
+    setIntSettingParameter( ctx, 0x9021, value );
+}
+
+//------------------------------------------------------------------------------
+void    setLoadControllingModes (modbus_t *ctx, int value)
+{
+    assert( value >= 0x00 && value <= 0x03 );
     setIntSettingParameter( ctx, 0x903D, value );
+}
+
+//------------------------------------------------------------------------------
+void    setWorkingTimeLength1 (modbus_t *ctx, int hour, int minute)
+{
+    assert( hour >= 0 && hour <= 23 );
+    assert( minute >= 0 && minute <= 59 );
+    setIntSettingParameter( ctx, 0x903E, ((hour << 8) | minute ) );
+}
+
+//------------------------------------------------------------------------------
+void    setWorkingTimeLength2 (modbus_t *ctx, int hour, int minute)
+{
+    assert( hour >= 0 && hour <= 23 );
+    assert( minute >= 0 && minute <= 59 );
+    setIntSettingParameter( ctx, 0x903F, ((hour << 8) | minute ) );
+}
+
+//------------------------------------------------------------------------------
+void    setTurnOnTiming1 (modbus_t *ctx, int hour, int minute, int second)
+{
+    assert( hour >= 0 && hour <= 23 );
+    assert( minute >= 0 && minute <= 59 );
+    assert( second >= 0 && second <= 59 );
+    setIntSettingParameter( ctx, 0x9042, second );
+    setIntSettingParameter( ctx, 0x9043, minute );
+    setIntSettingParameter( ctx, 0x9044, hour );
+}
+
+//------------------------------------------------------------------------------
+void    setTurnOffTiming1 (modbus_t *ctx, int hour, int minute, int second)
+{
+    assert( hour >= 0 && hour <= 23 );
+    assert( minute >= 0 && minute <= 59 );
+    assert( second >= 0 && second <= 59 );
+    setIntSettingParameter( ctx, 0x9045, second );
+    setIntSettingParameter( ctx, 0x9046, minute );
+    setIntSettingParameter( ctx, 0x9047, hour );
+}
+
+//------------------------------------------------------------------------------
+void    setTurnOnTiming2 (modbus_t *ctx, int hour, int minute, int second)
+{
+    assert( hour >= 0 && hour <= 23 );
+    assert( minute >= 0 && minute <= 59 );
+    assert( second >= 0 && second <= 59 );
+    setIntSettingParameter( ctx, 0x9048, second );
+    setIntSettingParameter( ctx, 0x9049, minute );
+    setIntSettingParameter( ctx, 0x904A, hour );
+}
+
+//------------------------------------------------------------------------------
+void    setTurnOffTiming2 (modbus_t *ctx, int hour, int minute, int second)
+{
+    assert( hour >= 0 && hour <= 23 );
+    assert( minute >= 0 && minute <= 59 );
+    assert( second >= 0 && second <= 59 );
+    setIntSettingParameter( ctx, 0x904B, second );
+    setIntSettingParameter( ctx, 0x904C, minute );
+    setIntSettingParameter( ctx, 0x904D, hour );
+}
+
+//------------------------------------------------------------------------------
+void    setBacklightTime (modbus_t *ctx, int seconds)
+{
+    setIntSettingParameter( ctx, 0x9063, seconds );
+}
+
+//------------------------------------------------------------------------------
+void    setLengthOfNight (modbus_t *ctx, int hour, int minute)
+{
+    assert( hour >= 0 && hour <= 23 );
+    assert( minute >= 0 && minute <= 59 );
+    setIntSettingParameter( ctx, 0x9065, ((hour << 8) | minute ) );
+}
+
+//------------------------------------------------------------------------------
+void    setDeviceConfigureOfMainPowerSupply (modbus_t *ctx, int value)
+{
+    assert( value >= 0x01 && value <= 0x02 );
+    setIntSettingParameter( ctx, 0x9066, value );
+}
+
+//------------------------------------------------------------------------------
+void    setBatteryRatedVoltageCode (modbus_t *ctx, int value)
+{
+    assert( value >= 0x00 && value <= 0x09 );
+    setIntSettingParameter( ctx, 0x9067, value );
+}
+
+//------------------------------------------------------------------------------
+void    setDefaultLoadOnOffInManualMode (modbus_t *ctx, int value)
+{
+    assert( value >= 0x00 && value <= 0x01 );
+    setIntSettingParameter( ctx, 0x906A, value );
+}
+
+//------------------------------------------------------------------------------
+void    setEqualizeDuration (modbus_t *ctx, int value)
+{
+    assert( value >= 0 && value <= 180 );
+    setIntSettingParameter( ctx, 0x906B, value );
+}
+
+//------------------------------------------------------------------------------
+void    setBoostDuration (modbus_t *ctx, int value)
+{
+    assert( value >= 10 && value <= 180 );
+    setIntSettingParameter( ctx, 0x906C, value );
+}
+
+//------------------------------------------------------------------------------
+void    setDischargingPercentage (modbus_t *ctx, float value)
+{
+    assert( value >= 20.0 && value <= 100.0 );
+    setFloatSettingParameter( ctx, 0x906D, value );
+}
+
+//------------------------------------------------------------------------------
+void    setChargingPercentage (modbus_t *ctx, float value)
+{
+    assert( value >= 0.0 && value <= 100.0 );
+    setFloatSettingParameter( ctx, 0x906E, value );
+}
+
+//------------------------------------------------------------------------------
+void    setManagementModesOfBatteryChargingAndDischarging (modbus_t *ctx, int value)
+{
+    assert( value >= 0 && value <= 1 );
+    setFloatSettingParameter( ctx, 0x9070, value );
 }
 
 

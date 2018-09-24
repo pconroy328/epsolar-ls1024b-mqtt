@@ -1,5 +1,3 @@
-/*
- */
 
 /* 
  * File:   ls1024b.h
@@ -176,45 +174,93 @@ typedef struct  StatisticalParameters {
     float   batteryVoltage;
 } StatisticalParameters_t;
 
-
-
-extern  void    getStatisticalParameters( modbus_t *ctx, StatisticalParameters_t *data );
-extern  void    getRatedData( modbus_t *ctx, RatedData_t *data );
-extern  void    getSettings( modbus_t *ctx, Settings_t *data );
-extern  void    getRealTimeStatus( modbus_t *ctx, RealTimeStatus_t *data );
-extern  void    getRealTimeData( modbus_t *ctx, RealTimeData_t *data );
-extern  int     getChargingDeviceStatus( modbus_t *ctx);
-extern  void    setChargingDeviceStatus( modbus_t *ctx, const int value);
-extern  int     getOutputControlMode( modbus_t *ctx );
-extern  void    setOutputControlMode( modbus_t *ctx, const int value );
-extern  int     getManualLoadControlMode( modbus_t *ctx );
-extern  void    setManualLoadControlMode( modbus_t *ctx, const int value );
-extern  int     getDefaultLoadControlMode( modbus_t *ctx );
-extern  void    setDefaultLoadControlMode( modbus_t *ctx, const int value );
-extern  int     getEnableLoadTestMode( modbus_t *ctx );
-extern  void    setEnableLoadTestMode( modbus_t *ctx, const int value );
-extern  void    forceLoadOnOff( modbus_t *ctx, const int value );
 extern  void    restoreSystemDefaults( modbus_t *ctx );
-extern  void    clearEnergyGeneratingStatistics( modbus_t *ctx );
-extern  int     getOverTemperatureInsideDevice( modbus_t *ctx );
-extern  int     isNightTime( modbus_t *ctx );
-extern  int     getBatteryStateOfCharge( modbus_t*ctx );
-extern  float   getRemoteBatteryTemperature( modbus_t *ctx );
-extern  float   getBatteryRealRatedPower( modbus_t *ctx );
-extern  void    getRealtimeClock( modbus_t *ctx, int *seconds, int *minutes, int *hour, int *day, int *month, int *year );
-extern  void    setRealtimeClock( modbus_t *ctx, const int seconds, const int minutes, const int hour, const int day, const int month, const int year );
-extern  void    setRealtimeClockToNow( modbus_t *ctx );
-extern  void    setBatteryType( modbus_t *ctx, const int batteryTypeCode );
-extern  void    setBatteryCapacity( modbus_t *ctx, const int batteryCapacityAH );
-extern  void    setHighVoltageDisconnect( modbus_t *ctx, const float value );
-extern  void    setLoadControlMode( modbus_t *ctx, const int value );
-extern  char    *getRealtimeClockStr( modbus_t *ctx, char *buffer, const int buffSize );
-extern  char    *getCurrentDateTime( void );;
-extern  void    setChargingDeviceOn( modbus_t *ctx );
-extern  void    setChargingDeviceOff( modbus_t *ctx );
-extern  void    setLoadDeviceOn( modbus_t *ctx );
-extern  void    setLoadDeviceOff( modbus_t *ctx );
 
+extern  void    clearEnergyGeneratingStatistics( modbus_t *ctx );
+extern  void    forceLoadOnOff( modbus_t *ctx, const int value );
+
+extern  int     getChargingDeviceStatus( modbus_t *ctx );
+extern  int     getDefaultLoadControlMode( modbus_t *ctx );
+extern  int     getEnableLoadTestMode( modbus_t *ctx );
+extern  int     getManualLoadControlMode( modbus_t *ctx );
+extern  int     getOutputControlMode( modbus_t *ctx );
+extern  int     getOverTemperatureInsideDevice( modbus_t *ctx );
+
+extern  void    getRealtimeClock( modbus_t *ctx, int *seconds, int *minutes, int *hour, int *day, int *month, int *year );
+extern  char    *getRealtimeClockStr( modbus_t *ctx, char *buffer, const int buffSize );
+extern  void    setRealtimeClockToNow( modbus_t *ctx );
+extern  void    setRealtimeClock( modbus_t *ctx, const int seconds, const int minutes, const int hour, const int day, const int month, const int year );
+
+
+extern  void    getRatedData( modbus_t *ctx, RatedData_t *data );
+extern  void    getRealTimeData( modbus_t *ctx, RealTimeData_t *data );
+extern  void    getRealTimeStatus( modbus_t *ctx, RealTimeStatus_t *data );
+extern  void    getSettings( modbus_t *ctx, Settings_t *data );
+extern  void    getStatisticalParameters( modbus_t *ctx, StatisticalParameters_t *data );
+
+extern  int     isNightTime( modbus_t *ctx );
+
+extern  void    setBacklightTime( modbus_t *ctx, int seconds );
+
+extern  void    setBatteryCapacity( modbus_t *ctx, int batteryCapacityAH );
+extern  void    setBatteryRatedVoltageCode( modbus_t *ctx, int value );
+extern  void    setBatteryTemperatureWarningLowerLimit( modbus_t *ctx, float value );
+extern  void    setBatteryTemperatureWarningUpperLimit( modbus_t *ctx, float value );
+extern  void    setBatteryType( modbus_t *ctx, int batteryTypeCode );
+
+extern  void    setBoostDuration( modbus_t *ctx, int value );
+extern  void    setBoostReconnectVoltage( modbus_t *ctx, float value );
+extern  void    setBoostVoltage( modbus_t *ctx, float value );
+
+extern  void    setChargingDeviceOff( modbus_t *ctx );
+extern  void    setChargingDeviceOn( modbus_t *ctx );
+
+extern  void    setChargingDeviceStatus( modbus_t *ctx, const int value );
+extern  void    setChargingLimitVoltage( modbus_t *ctx, float value );
+extern  void    setChargingPercentage( modbus_t *ctx, float value );
+
+extern  void    setControllerInnerTemperatureUpperLimitRecover( modbus_t *ctx, float value );
+extern  void    setControllerInnerTemperatureUpperLimit( modbus_t *ctx, float value );
+
+extern  void    setDayTimeThresholdVoltage( modbus_t *ctx, float value );
+
+extern  void    setDefaultLoadControlMode( modbus_t *ctx, const int value );
+extern  void    setDefaultLoadOnOffInManualMode( modbus_t *ctx, int value );
+
+extern  void    setDeviceConfigureOfMainPowerSupply( modbus_t *ctx, int value );
+
+extern  void    setDischargingLimitVoltage( modbus_t *ctx, float value );
+extern  void    setDischargingPercentage( modbus_t *ctx, float value );
+
+extern  void    setEnableLoadTestMode( modbus_t *ctx, const int value );
+
+extern  void    setEqualizationVoltage( modbus_t *ctx, float value );
+extern  void    setEqualizeDuration( modbus_t *ctx, int value );
+
+extern  void    setFloatVoltage( modbus_t *ctx, float value );
+extern  void    setHighVoltageDisconnect( modbus_t *ctx, float value );
+extern  void    setLengthOfNight( modbus_t *ctx, int hour, int minute );
+extern  void    setLightSignalCloseDelayTime( modbus_t *ctx, int value );
+extern  void    setLightSignalStartupDelayTime( modbus_t *ctx, int value );
+extern  void    setLoadControllingModes( modbus_t *ctx, int value );
+extern  void    setLoadDeviceOff( modbus_t *ctx );
+extern  void    setLoadDeviceOn( modbus_t *ctx );
+extern  void    setLowVoltageDisconnect( modbus_t *ctx, float value );
+extern  void    setLowVoltageReconnect( modbus_t *ctx, float value );
+extern  void    setManagementModesOfBatteryChargingAndDischarging( modbus_t *ctx, int value );
+extern  void    setManualLoadControlMode( modbus_t *ctx, const int value );
+extern  void    setNightTimeThresholdVoltage( modbus_t *ctx, float value );
+extern  void    setOutputControlMode( modbus_t *ctx, const int value );
+extern  void    setOverVoltageReconnect( modbus_t *ctx, float value );
+extern  void    setTempertureCompensationCoefficient( modbus_t *ctx, int value );
+extern  void    setTurnOffTiming1( modbus_t *ctx, int hour, int minute, int second );
+extern  void    setTurnOffTiming2( modbus_t *ctx, int hour, int minute, int second );
+extern  void    setTurnOnTiming1( modbus_t *ctx, int hour, int minute, int second );
+extern  void    setTurnOnTiming2( modbus_t *ctx, int hour, int minute, int second );
+extern  void    setUnderVoltageRecover( modbus_t *ctx, float value );
+extern  void    setUnderVoltageWarning( modbus_t *ctx, float value );
+extern  void    setWorkingTimeLength1( modbus_t *ctx, int hour, int minute );
+extern  void    setWorkingTimeLength2( modbus_t *ctx, int hour, int minute );
 
 
 #ifdef __cplusplus
@@ -222,4 +268,3 @@ extern  void    setLoadDeviceOff( modbus_t *ctx );
 #endif
 
 #endif /* LS1024B_H */
-

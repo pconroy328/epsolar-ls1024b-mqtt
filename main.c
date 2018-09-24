@@ -14,6 +14,7 @@
 #include <getopt.h>
 #include <unistd.h>
 #include <string.h>
+#include <time.h>
 
 #include <modbus/modbus.h>
 
@@ -50,7 +51,7 @@ int main (int argc, char* argv[])
     modbus_t    *ctx;
     // char        mqttClientID[ 256 ];
     
-    printf( "LS1024B_MQTT application - version 1.5.2 (individual modbus calls)\n" );
+    printf( "LS1024B_MQTT application - version 1.9.0 (cleanup and add setters)\n" );
 
     parseCommandLine( argc, argv );
     Logger_Initialize( "ls1024b.log", 3 );
@@ -93,7 +94,6 @@ int main (int argc, char* argv[])
     Logger_LogInfo( "Setting battery capacity to 5AH, type to '1' and loadControlMode to 0x00\n" );
     setBatteryCapacity( ctx, 5 );
     setBatteryType( ctx, 1 );
-    setLoadControlMode( ctx, 0x00 );
 
     while (TRUE) {      
         //
