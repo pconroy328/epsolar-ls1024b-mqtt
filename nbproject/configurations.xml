@@ -46,6 +46,7 @@
       <compileType>
         <cTool>
           <standard>3</standard>
+          <commandLine>-Wall</commandLine>
         </cTool>
         <linkerTool>
           <linkerLibItems>

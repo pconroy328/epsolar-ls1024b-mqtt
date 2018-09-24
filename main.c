@@ -31,7 +31,7 @@ static  int     sleepSeconds = 15;
 static  char    *brokerHost = "ec2-52-32-56-28.us-west-2.compute.amazonaws.com";
 static  char    *controllerID = "1";
 static  char    *devicePort = "/dev/ttyUSB0";
-static  char    *clientID = "ls1024b";          // fix - add random
+//static  char    *clientID = "ls1024b";          // fix - add random
 
 static  char    *topTopic = "LS1024B";
 static  char    fullTopic[ 1024 ];
@@ -45,9 +45,9 @@ extern char *createJSONMessage (modbus_t *ctx, const char *topic, const RatedDat
 int main (int argc, char* argv[]) 
 {
     modbus_t    *ctx;
-    char        mqttClientID[ 256 ];
+    // char        mqttClientID[ 256 ];
     
-    printf( "LS1024B_MQTT application - version 1.5 (individual modbus calls)\n" );
+    printf( "LS1024B_MQTT application - version 1.5.1 (individual modbus calls)\n" );
 
     parseCommandLine( argc, argv );
     Logger_Initialize( "ls1024b.log", 3 );

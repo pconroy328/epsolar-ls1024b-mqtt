@@ -8,6 +8,46 @@
 #include "ls1024b.h"
 #include "logger.h"
 
+static
+int   int_read_input_register ( modbus_t *ctx,
+                                    const int registerAddress,
+                                    const int numBytes,
+                                    const char *description,
+                                    const int badReadValue );
+static
+float   float_read_input_register ( modbus_t *ctx,
+                                    const int registerAddress,
+                                    const int numBytes,
+                                    const char *description,
+                                    const float badReadValue );
+
+
+static
+int   int_read_register ( modbus_t *ctx,
+                                    const int registerAddress,
+                                    const int numBytes,
+                                    const char *description,
+                                    const int badReadValue );
+static
+float   float_read_register ( modbus_t *ctx,
+                                    const int registerAddress,
+                                    const int numBytes,
+                                    const char *description,
+                                    const float badReadValue );
+
+
+static  char    *batteryTypeToString( uint16_t batteryType );
+static  char    *chargingModeToString( uint16_t mode );
+static  int     getCoilValue( modbus_t *ctx, const int coilNum, const char *description);
+static  void    setCoilValue( modbus_t *ctx, const int coilNum, const int value, const char *description);
+static  float   C2F( float tempC );
+static  void    decodeBatteryStatusBits( RealTimeStatus_t *data, const int value );
+static  void    decodeChargingStatusBits( RealTimeStatus_t *data, const int value );
+static  void    decodeDischargingStatusBits( RealTimeStatus_t *data, const int value );
+static  int     setFloatSettingParameter( modbus_t *ctx, const int registerAddress, const float floatValue );
+static  int     setIntSettingParameter( modbus_t *ctx, const int registerAddress, const int intValue );
+
+
 
 // -----------------------------------------------------------------------------
 void    getRatedData (modbus_t *ctx, RatedData_t *data)
@@ -43,7 +83,7 @@ void    getRealTimeData (modbus_t *ctx, RealTimeData_t *data)
     data->batteryTemp = C2F( float_read_input_register( ctx, 0x3110, 1, "Battery Temp", -100.0 ) );
     data->caseTemp    = C2F( float_read_input_register( ctx, 0x3111, 1, "Case Temp", -100.0 ) );
 
-    data->batterySOC = float_read_input_register( ctx, 0x311A, 1, "Battery SoC", -1.0 );
+    data->batterySOC = (int) (float_read_input_register( ctx, 0x311A, 1, "Battery SoC", -1.0 ) * 100.0);
     data->remoteBatteryTemperature = C2F( float_read_input_register( ctx, 0x311B, 1, "Remote Temp Sensor", -100.0 ) );
     data->batteryRealRatedPower = float_read_input_register( ctx, 0x311D, 1, "Battery Real Rated Power", -1.0 );
 }
@@ -159,7 +199,11 @@ void    getSettings (modbus_t *ctx, Settings_t *data)
     
     data->backlightTime = int_read_register( ctx, 0x9063, 1, "Backlight on duration", -1 );
     data->lengthOfNight = int_read_register( ctx, 0x9065, 1, "Length of Night @ 0x9065", -1 );
-    data->deviceConfigureMainPower = int_read_register( ctx, 0x9066, 1, "Device Configuration of Main Power Supply", -1 );
+    
+    // 
+    //  0x9066 doesn't apply to my LS1024B
+    //data->deviceConfigureMainPower = int_read_register( ctx, 0x9066, 1, "Device Configuration of Main Power Supply", -1 );
+    
     data->batteryRatedVoltageCode = int_read_register( ctx, 0x9067, 1, "batteryRatedVoltageCode @ 0x9067", -1 );
     
     data->defaultLoadOnOffManualMode = int_read_register( ctx, 0x906A, 1, "defaultLoadOnOffManualMode @ 0x906A", -1 );

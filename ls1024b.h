@@ -215,44 +215,6 @@ extern  void    setChargingDeviceOff( modbus_t *ctx );
 extern  void    setLoadDeviceOn( modbus_t *ctx );
 extern  void    setLoadDeviceOff( modbus_t *ctx );
 
-static
-int   int_read_input_register ( modbus_t *ctx,
-                                    const int registerAddress,
-                                    const int numBytes,
-                                    const char *description,
-                                    const int badReadValue );
-static
-float   float_read_input_register ( modbus_t *ctx,
-                                    const int registerAddress,
-                                    const int numBytes,
-                                    const char *description,
-                                    const float badReadValue );
-
-
-static
-int   int_read_register ( modbus_t *ctx,
-                                    const int registerAddress,
-                                    const int numBytes,
-                                    const char *description,
-                                    const int badReadValue );
-static
-float   float_read_register ( modbus_t *ctx,
-                                    const int registerAddress,
-                                    const int numBytes,
-                                    const char *description,
-                                    const float badReadValue );
-
-
-static  char    *batteryTypeToString( uint16_t batteryType );
-static  char    *chargingModeToString( uint16_t mode );
-static  int     getCoilValue( modbus_t *ctx, const int coilNum, const char *description);
-static  void    setCoilValue( modbus_t *ctx, const int coilNum, const int value, const char *description);
-static  float   C2F( float tempC );
-static  void    decodeBatteryStatusBits( RealTimeStatus_t *data, const int value );
-static  void    decodeChargingStatusBits( RealTimeStatus_t *data, const int value );
-static  void    decodeDischargingStatusBits( RealTimeStatus_t *data, const int value );
-static  int     setFloatSettingParameter( modbus_t *ctx, const int registerAddress, const float floatValue );
-static  int     setIntSettingParameter( modbus_t *ctx, const int registerAddress, const int intValue );
 
 
 #ifdef __cplusplus

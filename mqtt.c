@@ -98,7 +98,7 @@ void    MQTT_Initialize (const char *controllerID, const char *brokerHost)
         int errorNumber = errno;
         if (errorNumber == ENOMEM)
             Logger_LogFatal( "Out of memory - cannot create a new MQTT instance!" );
-        else if (errorNumber = EINVAL)
+        else if (errorNumber == EINVAL)
             Logger_LogFatal( "Input parameters are invalid - cannot create a new MQTT instance!" );
     }
     
@@ -140,6 +140,8 @@ void    MQTT_Initialize (const char *controllerID, const char *brokerHost)
 static  
 void    MQTT_MessageReceivedHandler (struct mosquitto *mosq, void *userdata, const struct mosquitto_message *msg)
 {
+#if 0    
+
     //
     //  Examples we expect
     //  { "topic" : "LS1024B/x/COMMAND", "dateTime" : "x", "parameter": "Load", "value" : "Off" }   
@@ -149,7 +151,6 @@ void    MQTT_MessageReceivedHandler (struct mosquitto *mosq, void *userdata, con
     char    *jsonPayload = msg->payload;
     int     jsonLength = msg->payloadlen;
     char    *topic = msg->topic;
-#if 0    
     if (jsonPayload != NULL && jsonLength > 0) {
         cJSON *json = cJSON_Parse( jsonPayload );
 
