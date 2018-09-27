@@ -7,10 +7,12 @@
 #include <errno.h>
 #include <time.h>
 
+#include <cjson/cJSON.h>
+
 #include "mqtt.h"
 #include "logger.h"
 #include "ls1024b.h"
-#include "cJSON.h"
+#include "commandQueue.h"
 
 
 
@@ -19,7 +21,7 @@ static  int              MQTT_defaultsSet = FALSE;
 
 
 static  struct mosquitto    *myMQTTInstance = NULL;
-static  char            subscriptionTopic[ 1024 ];          // MQTT Spec is 64K
+//static  char            subscriptionTopic[ 1024 ];          // MQTT Spec is 64K
 static  char            publishTopic[ 1024 ];               // These two will hold Parent and Subtopics
 static  int             QoS;                                // Quality of Service used by MQTT (0, 1 or 2)
 
@@ -31,7 +33,7 @@ static  char            *userData = NULL;
 //  Mosquitto supports a number of 'callback' functions on various triggers. Here are some default handlers
 static  void    defaultOnConnectedCallback( struct mosquitto *mosq, void *userdata, int result );
 static  void    defaultOnDisconnectedCallback( struct mosquitto *mosq, void *userdata, int result );
-static  void    defaultOnLogCallback( struct mosquitto *mosq, void *userdata, int level, const char *str );
+//static  void    defaultOnLogCallback( struct mosquitto *mosq, void *userdata, int level, const char *str );
 static  void    defaultOnMessageReceivedCallback( struct mosquitto *mosq, void *userdata, const struct mosquitto_message *message );
 static  void    defaultOnSubscribedCallback( struct mosquitto *mosq, void *userdata, int mid, int qos_count, const int *granted_qos );
 static  void    defaultOnUnsubscribedCallback( struct mosquitto *mosq, void *userdata, int result );
@@ -41,7 +43,7 @@ static  void    defaultOnPublishedCallback( struct mosquitto *mosq, void *userda
 
 //
 // This is the actual function that'll handle incoming MQTT messages
-static  void    MQTT_MessageReceivedHandler( struct mosquitto *mosq, void *userdata, const struct mosquitto_message *message );
+//static  void    MQTT_MessageReceivedHandler( struct mosquitto *mosq, void *userdata, const struct mosquitto_message *message );
 
 
 
@@ -137,43 +139,82 @@ void    MQTT_Initialize (const char *controllerID, const char *brokerHost)
 
 
 // -----------------------------------------------------------------------------
-static  
+//static  
 void    MQTT_MessageReceivedHandler (struct mosquitto *mosq, void *userdata, const struct mosquitto_message *msg)
 {
-#if 0    
-
     //
     //  Examples we expect
-    //  { "topic" : "LS1024B/x/COMMAND", "dateTime" : "x", "parameter": "Load", "value" : "Off" }   
-    //  { "topic" : "LS1024B/x/COMMAND", "dateTime" : "x", "parameter": "FactoryReset", "value" : true }
-    //  { "topic" : "LS1024B/x/COMMAND", "dateTime" : "x", "parameter": "BatteryType", "value" : "Sealed" }
-    //  { "topic" : "LS1024B/x/COMMAND", "dateTime" : "x", "parameter": "BatteryCapacity", "value" : 5 }
+    //  { "topic" : "LS1024B/x/COMMAND", "dateTime" : "x", "command" : "cmd", "iParam": N, "fParam" : X.X, "cParam" : "abc" }   
+
     char    *jsonPayload = msg->payload;
     int     jsonLength = msg->payloadlen;
     char    *topic = msg->topic;
+    
+    //char    *jsonPayload =     " { \"topic\" : \"LS1024B/x/COMMAND\", \"dateTime\" : \"x\", \"command\" : \"BT\", \"iParam\": 5, \"fParam\" : 10.1, \"cParam\" : \"abc\" }   ";
+    //int     jsonLength = strlen( jsonPayload );
+    
+    char    *command = NULL;
+    int     iParam = -1;
+    double  fParam = -1.0;
+    char    *cParam = NULL;
+    
+    
     if (jsonPayload != NULL && jsonLength > 0) {
         cJSON *json = cJSON_Parse( jsonPayload );
 
-        cJSON   *value = NULL;
-        cJSON   *parameter = cJSON_GetObjectItem( json, "parameter" );
-        if (cJSON_IsString( parameter ) && (parameter->valuestring != NULL)) {
-            
-            char *value = cJSON_GetObjectItem( json, "value" );
-            if (cJSON_IsString( value ) && (value->valuestring != NULL)) {
+        //
+        // Pick off the command
+        cJSON   *parameter = cJSON_GetObjectItemCaseSensitive( json, "command" );
+        if (cJSON_IsString( parameter ) && (parameter->valuestring != NULL)) 
+            command = parameter->valuestring;     
+        else
+            Logger_LogError( "No attributed named 'command' in the JSON message!\n" );
+       
+
+        //
+        // Now the Integer Parameter
+        parameter = cJSON_GetObjectItemCaseSensitive( json, "iParam" );
+        if (cJSON_IsNumber( parameter )) 
+            iParam = parameter->valueint;
+        else 
+            Logger_LogWarning( "No attributed named 'iParam' in the JSON message!\n" );
                 
-            } else {
-                Logger_LogError( "No attributed named 'value' after the 'parameter' attribute in the json message!\n" );            
-            }
-            
-        } else {
-            Logger_LogError( "No attributed named 'parameter' in the json message!\n" );
-        }
+
+        //
+        // Now the Floating Point Parameter
+        parameter = cJSON_GetObjectItemCaseSensitive( json, "fParam" );
+        if (cJSON_IsNumber( parameter )) 
+            fParam = parameter->valuedouble;
+        else
+            Logger_LogWarning( "No attributed named 'fParam' in the JSON message!\n" );
+
+        //
+        // Pick off the String Parameter
+        parameter = cJSON_GetObjectItemCaseSensitive( json, "cParam" );
+        if (cJSON_IsString( parameter ) && (parameter->valuestring != NULL)) 
+            cParam = parameter->valuestring;     
+        else
+            Logger_LogWarning( "No attributed named 'cParam' in the JSON message!\n" );
+
+        //
+        // Add it to our Command Queue
+        Logger_LogWarning( "JSON COMMAND RECEIVED. Command [%s], iParam [%d], fParam [%0.2f], cParam [%s]\n",
+                        command, iParam, fParam, cParam );
+        
+        mqttCommand_t   *c1 = malloc( sizeof( mqttCommand_t ));
+        c1->command = command;   
+        c1->cParam = cParam;    
+        c1->iParam = iParam;  
+        c1->fParam = fParam;
+        if (addElement( c1 ) != NULL)
+            Logger_LogWarning( "Command has been added to Queue\n" );
+        else
+            Logger_LogError( "Command was NOT added to queue!\n" );
         
         cJSON_Delete( json );       
     } else {
         Logger_LogError( "Received a null or zero length message\n" );
     }
-#endif
 }
 
 // ----------------------------------------------------------------------------
@@ -224,7 +265,7 @@ void    MQTT_Subscribe  (const char *topic, const int QoS)
 }
 
 // ----------------------------------------------------------------------------
-void    MQTT_Unsubscribe  (void *aSystem)
+void    MQTT_Unsubscribe (const char *subscriptionTopic)
 {
     int returnCode = mosquitto_unsubscribe( myMQTTInstance,
                         NULL,                       // message ID, not needed
@@ -320,6 +361,7 @@ void defaultOnPublishedCallback (struct mosquitto *mosq, void *userdata, int res
     Logger_LogInfo( "MQTT Published to Topic Callback - The broker has received your message.\n" );    
 }
 
+#if 0
 // ------------------------------------------------------------------------------
 static
 void defaultOnLogCallback (struct mosquitto *mosq, void *userdata, int level, const char *str)
@@ -327,6 +369,8 @@ void defaultOnLogCallback (struct mosquitto *mosq, void *userdata, int level, co
     /* Print all log messages regardless of level. */
     // debug_print("MQTT Logging: [%s]\n", str );
 }
+#endif 
+
 
 // ------------------------------------------------------------------------------
 //  Called when a message has been RECEIVED from the broker

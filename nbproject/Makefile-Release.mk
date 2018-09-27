@@ -35,10 +35,10 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
-	${OBJECTDIR}/cJSON.o \
+	${OBJECTDIR}/commandQueue.o \
+	${OBJECTDIR}/doCommand.o \
 	${OBJECTDIR}/jsonMessage.o \
 	${OBJECTDIR}/logger.o \
-	${OBJECTDIR}/ls1024b.o \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/mqtt.o
 
@@ -67,10 +67,15 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/ls1024b_mqtt: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/ls1024b_mqtt ${OBJECTFILES} ${LDLIBSOPTIONS}
 
-${OBJECTDIR}/cJSON.o: cJSON.c
+${OBJECTDIR}/commandQueue.o: commandQueue.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/cJSON.o cJSON.c
+	$(COMPILE.c) -O2 -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/commandQueue.o commandQueue.c
+
+${OBJECTDIR}/doCommand.o: doCommand.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/doCommand.o doCommand.c
 
 ${OBJECTDIR}/jsonMessage.o: jsonMessage.c
 	${MKDIR} -p ${OBJECTDIR}
@@ -81,11 +86,6 @@ ${OBJECTDIR}/logger.o: logger.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/logger.o logger.c
-
-${OBJECTDIR}/ls1024b.o: ls1024b.c
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/ls1024b.o ls1024b.c
 
 ${OBJECTDIR}/main.o: main.c
 	${MKDIR} -p ${OBJECTDIR}

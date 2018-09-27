@@ -305,10 +305,10 @@ void    setRealtimeClockToNow (modbus_t *ctx)
 
 
 //------------------------------------------------------------------------------
-void    setBatteryType ( modbus_t *ctx, int batteryTypeCode)
+void    setBatteryType (modbus_t *ctx, int batteryTypeCode)
 {
     assert( batteryTypeCode >= 0x00 && batteryTypeCode <= 0x03 );
-    setIntSettingParameter( ctx, 0x9000, batteryTypeCode );
+    // setIntSettingParameter( ctx, 0x9000, batteryTypeCode );
 }    
     
 
@@ -317,7 +317,7 @@ void    setBatteryType ( modbus_t *ctx, int batteryTypeCode)
 void    setBatteryCapacity (modbus_t *ctx, int batteryCapacityAH)
 {
     assert( batteryCapacityAH >= 0x00 );
-    setIntSettingParameter( ctx, 0x9001, batteryCapacityAH );
+    // setIntSettingParameter( ctx, 0x9001, batteryCapacityAH );
 }
 
 //------------------------------------------------------------------------------
@@ -327,12 +327,12 @@ void    setTempertureCompensationCoefficient (modbus_t *ctx, int value)
     setIntSettingParameter( ctx, 0x9002, value );
 }
 //------------------------------------------------------------------------------
-void    setHighVoltageDisconnect (modbus_t *ctx, float value)
+void    setHighVoltageDisconnect (modbus_t *ctx, double value)
 {
     //
     //  Manual says 'User' must be between 9 and 17 volts
-    assert( value >= 9.0  && value <= 17.0);
-    setFloatSettingParameter( ctx, 0x9003, value );
+    assert( value >= 9.0  && value <= 17.0 );
+    setFloatSettingParameter( ctx, 0x9003, (float) value );
 }
 
 //------------------------------------------------------------------------------

@@ -4,9 +4,8 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
-      <itemPath>cJSON.h</itemPath>
+      <itemPath>commandQueue.h</itemPath>
       <itemPath>logger.h</itemPath>
-      <itemPath>ls1024b.h</itemPath>
       <itemPath>mqtt.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
@@ -16,10 +15,10 @@
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
-      <itemPath>cJSON.c</itemPath>
+      <itemPath>commandQueue.c</itemPath>
+      <itemPath>doCommand.c</itemPath>
       <itemPath>jsonMessage.c</itemPath>
       <itemPath>logger.c</itemPath>
-      <itemPath>ls1024b.c</itemPath>
       <itemPath>main.c</itemPath>
       <itemPath>mqtt.c</itemPath>
     </logicalFolder>
@@ -55,21 +54,20 @@
             <linkerLibLibItem>mosquitto</linkerLibLibItem>
             <linkerLibStdlibItem>PosixThreads</linkerLibStdlibItem>
           </linkerLibItems>
+          <commandLine>-lsccls10x4b -lcjson</commandLine>
         </linkerTool>
       </compileType>
-      <item path="cJSON.c" ex="false" tool="0" flavor2="0">
+      <item path="commandQueue.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="cJSON.h" ex="false" tool="3" flavor2="0">
+      <item path="commandQueue.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="doCommand.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="jsonMessage.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="logger.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="logger.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="ls1024b.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="ls1024b.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -99,19 +97,17 @@
           <developmentMode>5</developmentMode>
         </asmTool>
       </compileType>
-      <item path="cJSON.c" ex="false" tool="0" flavor2="0">
+      <item path="commandQueue.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="cJSON.h" ex="false" tool="3" flavor2="0">
+      <item path="commandQueue.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="doCommand.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="jsonMessage.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="logger.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="logger.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="ls1024b.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="ls1024b.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.c" ex="false" tool="0" flavor2="0">
       </item>

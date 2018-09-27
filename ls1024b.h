@@ -238,7 +238,7 @@ extern  void    setEqualizationVoltage( modbus_t *ctx, float value );
 extern  void    setEqualizeDuration( modbus_t *ctx, int value );
 
 extern  void    setFloatVoltage( modbus_t *ctx, float value );
-extern  void    setHighVoltageDisconnect( modbus_t *ctx, float value );
+extern  void    setHighVoltageDisconnect( modbus_t *ctx, double value );
 extern  void    setLengthOfNight( modbus_t *ctx, int hour, int minute );
 extern  void    setLightSignalCloseDelayTime( modbus_t *ctx, int value );
 extern  void    setLightSignalStartupDelayTime( modbus_t *ctx, int value );

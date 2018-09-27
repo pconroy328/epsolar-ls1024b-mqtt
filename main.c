@@ -21,6 +21,8 @@
 #include "logger.h"
 #include "ls1024b.h"
 #include "mqtt.h"
+#include "commandQueue.h"
+
 
 //  
 // Forwards
@@ -36,6 +38,7 @@ static  char    *devicePort = "/dev/ttyUSB0";
 
 static  char    *topTopic = "LS1024B";
 static  char    fullTopic[ 1024 ];
+static  char    subscriptionTopic[ 1024 ];
 
 
 extern char *createJSONMessage (modbus_t *ctx, const char *topic, const RatedData_t *ratedData, 
@@ -43,18 +46,22 @@ extern char *createJSONMessage (modbus_t *ctx, const char *topic, const RatedDat
         const Settings_t *setData, const StatisticalParameters_t *stats);
 
 
-
+extern int     doCommand( modbus_t *ctx, mqttCommand_t *cmd );
+// extern void    MQTT_MessageReceivedHandler (struct mosquitto *mosq, void *userdata, const struct mosquitto_message *msg);
 
 // -----------------------------------------------------------------------------
 int main (int argc, char* argv[]) 
 {
     modbus_t    *ctx;
-    // char        mqttClientID[ 256 ];
     
     printf( "LS1024B_MQTT application - version 1.9.0 (cleanup and add setters)\n" );
-
+    
     parseCommandLine( argc, argv );
     Logger_Initialize( "ls1024b.log", 3 );
+    
+    //
+    // Create a FIFO queue for our incoming Commands over MQTT
+    createQueue( 0, 0 );
     
     //
     // Need to create a unique client ID
@@ -80,6 +87,12 @@ int main (int argc, char* argv[])
 
     snprintf( fullTopic, sizeof fullTopic, "%s/%s/%s", topTopic, controllerID, "DATA" );
     Logger_LogInfo( "Publishing messaages to MQTT Topic [%s]\n", fullTopic );
+    
+    
+    snprintf( subscriptionTopic, sizeof subscriptionTopic, "%s/%s/%s", topTopic, controllerID, "COMMAND" );
+    Logger_LogInfo( "Subscribing to commands on MQTT Topic [%s]", subscriptionTopic );
+    MQTT_Subscribe ( subscriptionTopic, 0 );
+
     
     RatedData_t             ratedData;
     RealTimeData_t          realTimeData;
@@ -126,15 +139,27 @@ int main (int argc, char* argv[])
         //
         // Publish it to our MQTT broker 
         MQTT_PublishData( fullTopic, jsonMessage, strlen( jsonMessage ) );
+
+        //
+        //  did someone send us a comand?
+        mqttCommand_t   *command = removeElement();
+        if (command != NULL) {
+            doCommand( ctx, command );
+            free( command );
+        }
         
         free( jsonMessage );
         sleep( sleepSeconds );
     }
-    
+
+    MQTT_Unsubscribe( subscriptionTopic );
     MQTT_Teardown( NULL );
-    Logger_LogInfo( "Done" );
+    
+    destroyQueue();
+    
     modbus_close( ctx );
     modbus_free( ctx );
+    Logger_LogInfo( "Done" );
     Logger_Terminate();
     
     return (EXIT_SUCCESS);

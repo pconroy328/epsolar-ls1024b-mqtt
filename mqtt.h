@@ -23,9 +23,9 @@ extern  void    MQTT_Initialize( const char *controllerID, const char *brokerHos
 extern  void    MQTT_Teardown( );
 extern  void    *MQTT_MainLoop( void *threadArgs );
 extern  void    MQTT_Subscribe( const char *topic, const int QoS );
-extern  void    MQTT_Unsubscribe( void *aSystem );
-extern  int     MQTT_SendReceive( void *aSystem );
-extern  int     MQTT_HandleError( void *aSystem, int errorCode );
+extern  void    MQTT_Unsubscribe( const char *topic );
+//extern  int     MQTT_SendReceive( void *aSystem );
+//extern  int     MQTT_HandleError( void *aSystem, int errorCode );
 extern  void    MQTT_PublishData( const char *topic, const char *data, const int length );
 
 extern  void    MQTT_SetLastWillAndTestament( void *aSystem );
