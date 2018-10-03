@@ -1,104 +1,35 @@
 /*
- * The goal is to crate a JSON message that has this structure
+ * File:    jsonMessage.c
+ * author:  patrick conroy
+ * 
+ * The goal is to crate a JSON message that has a structure like this:
  * 
  * {
 	"dateTime" : "xx",
 	"controllerDateTime" : "xx",
 	"isNightTime" : false,
 	"batterySOC" : 100,
-	"pvArrayVoltage" : 13.3,
-	"pvArrayCurrent" : 4.3,
-	"loadVoltage" : 13.3,
 	"loadCurrent" : 4.3,
- 
 	"temperatures"  : {
-		"unit" : "Farenheit",
 		"battery" : 22.2,
 		"case" : 23.3,
 		"remoteSensor" : 24.4
 	},
 
 	"batteryStatus" : {
-        	"voltage" : "Normal",
-		"temperature" : "Normal",
-		"innerResistance" : "Normal",
-		"identification" : "Correct"
 	},
 
 	"chargingStatus" : {
-		"status" : "Floating",
-		"isNormal" : true,
-		"isRunning" : true,
-		"inputVoltage" : "Normal",
-		"MOSFETShort" : false,
-		"someMOSFETShort" : false,
-		"antiReverseMOSFETShort" : false,
-		"inputIsOverCurrent" : false,
-		"loadIsOverCurrent" : false,
-		"loadIsShort" : false,
-		"loadMOSFETIsShort" : false,
-		"pvInputIsShort" : false
-	},
-
-	"dischargingStatus" : {
-		"isNormal" : true,
-		"isRunning" : true,
-		"inputVoltageStatus" : "Normal",
-		"outputPower" : "Light Load",
-		"shortCircuit" : false,
-		"unableToDischarge" : false,
-		"unableToStopDischarging" : false,
-		"outputVoltageAbnormal" : false,
-		"inputOverpressure" : false,
-		"highVoltageSideShort" : false,
-		"boostOverpressure" : false,
-		"outputOverpressure" : false
 	},
 
 	"settings" : {
 		"batteryType" : "Sealed",
-		"batteryCapacity" : 5,
-	    	"tempCompensationCoeff" : 11.1,
-		"highVoltageDisconnect" : 11.1,
-		"chargingLimitVoltage" : 11.1,
-		"overVoltageReconnect" : 11.1,
-		"equalizationVoltage" : 11.1,
-		"boostVoltage" : 11.1,
-		"floatVoltage" : 11.1,
-		"boostReconnectVoltage" : 11.1,
-		"lowVoltageReconnect" : 11.1,
-		"underVoltageRecover" : 11.1,
-		"underVoltageWarning" : 11.1,
-		"lowVoltageDisconnect" : 11.1,
-		"dischargingLimitVoltage" : 11.1,
-	    	"batteryTempWarningUpperLimit" : 11.1,
-		"batteryTempWarningLowerLimit" : 11.1,
-		"controllerTempWarningUpperLimit" : 11.1,
-		"controllerTempWarningLowerLimit" : 11.1,  
-		"daytimeThresholdVoltage" : 11.1,
-		"lightSignalStartupTime" : 1,
-		"lighttimeThresholdVoltage" : 11.1,
-		"lightSignalCloseDelayTime" : 2,
-		"localControllingModes" : 3,
+ 		"localControllingModes" : 3,
 		"workingTimeLength1" : 4, 
 		"workingTimeLength2" : 5
 	},
 
-	"statistics" : {
-		"maximumInputVoltageToday" : 0.2,
-		"minimumInputVoltageToday" : 1.2,
-		"maximumBatteryVoltageToday" : 2.2,
-		"minimumBatteryVoltageToday" : 3.2,
-
-		"consumedEnergyToday" :  100.0,
-		"consumedEnergyMonth" :  100.0,
-		"consumedEnergyYear" :  100.0,
-		"totalConsumedEnergy" :  100.0,
-		"generatedEnergyToday" :  100.0,
-		"generatedEnergyMonth" :  100.0,
-		"generatedEnergyYear" :  100.0,
-		"totalGeneratedEnergy" :  100.0,
-    
+	"statistics" : {    
 		"batteryVoltage" : 12.2,
 		"batteryCurrent" : 4.3
 	}
@@ -107,35 +38,87 @@
  */
 
 #include <stdio.h>
-#include "cJSON.h"
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#include "cjson/cJSON.h"
 #include "ls1024b.h"
 
 extern char    *getCurrentDateTime( void );
 
+//
+//  Quickie Macros to control Floating Point Precision
+#define FP21P(x) ( (((int)((x) * 10 + .5))/10.0) )                  // Floating Point to 1 point
+#define FP22P(x) ( (((int)((x) * 100 + .5))/100.0) )                // Floating Point to 2 points
+#define FP23P(x) ( (((int)((x) * 1000 + .5))/1000.0) )              // Floating Point to 3 points
+#define FP24P(x) ( (((int)((x) * 10000 + .5))/10000.0) )            // Floating Point to 4 points
+
+
+
 
 // -----------------------------------------------------------------------------
-char *createJSONMessage (modbus_t *ctx, const char *topic, const RatedData_t *ratedData, const RealTimeData_t *rtData, const RealTimeStatus_t *rtStatusData, const Settings_t *setData, const StatisticalParameters_t *stats)
+static  char    currentDateTimeBuffer[ 80 ];
+char    *getCurrentDateTime (void)
 {
-    cJSON *message = cJSON_CreateObject();
-    cJSON_AddStringToObject( message, "topic", topic );
-    cJSON_AddStringToObject( message, "version", "1.3" );
+    //
+    // Something quick and dirty... Fix this later - thread safe
+    time_t  current_time;
+    struct  tm  *tmPtr;
+ 
+    memset( currentDateTimeBuffer, '\0', sizeof currentDateTimeBuffer );
     
+    /* Obtain current time as seconds elapsed since the Epoch. */
+    current_time = time( NULL );
+    if (current_time > 0) {
+        /* Convert to local time format. */
+        tmPtr = localtime( &current_time );
+ 
+        if (tmPtr != NULL) {
+            strftime( currentDateTimeBuffer,
+                    sizeof currentDateTimeBuffer,
+                    "%FT%T%z",                           // ISO 8601 Format
+                    tmPtr );
+        }
+    }
+    
+    return &currentDateTimeBuffer[ 0 ];
+}
+
+// -----------------------------------------------------------------------------
+char *createJSONMessage (modbus_t *ctx, const char *topic, const RatedData_t *ratedData, 
+                        const RealTimeData_t *rtData, const RealTimeStatus_t *rtStatusData, 
+                        const Settings_t *setData, const StatisticalParameters_t *stats)
+{
+    //
+    //  Dave Gamble's C library to create JSON
+    cJSON *message = cJSON_CreateObject();
+
+    cJSON_AddStringToObject( message, "topic", topic );
+    cJSON_AddStringToObject( message, "version", "2.0" );
+    
+    
+    //
+    //  cJSON uses a "%1.15g" format for number formatting which means we can get some
+    //  very large FP numbers in the output.  Let's round and truncate before we have cJSON
+    //  format the numbers.
+    //
     cJSON_AddStringToObject( message, "dateTime", getCurrentDateTime() );
     cJSON_AddStringToObject( message, "controllerDateTime", setData->realtimeClock );
     cJSON_AddBoolToObject( message, "isNightTime", isNightTime( ctx ) );
     cJSON_AddNumberToObject( message, "batterySOC", rtData->batterySOC );
-    cJSON_AddNumberToObject( message, "pvArrayVoltage", rtData->pvArrayVoltage );
-    cJSON_AddNumberToObject( message, "pvArrayCurrent", rtData->pvArrayCurrent );
-    cJSON_AddNumberToObject( message, "loadVoltage", rtData->loadVoltage );
-    cJSON_AddNumberToObject( message, "loadCurrent", rtData->loadCurrent );
+    cJSON_AddNumberToObject( message, "pvArrayVoltage", FP22P( rtData->pvArrayVoltage ) );
+    cJSON_AddNumberToObject( message, "pvArrayCurrent", FP22P( rtData->pvArrayCurrent ) );
+    cJSON_AddNumberToObject( message, "loadVoltage", FP22P( rtData->loadVoltage ) );
+    cJSON_AddNumberToObject( message, "loadCurrent", FP22P( rtData->loadCurrent ) );
 
     //
     //  Temperatures - nested object
     cJSON *temperatures = cJSON_CreateObject();
     cJSON_AddStringToObject( temperatures, "unit", "Fahrenheit" );
-    cJSON_AddNumberToObject( temperatures, "battery", rtData->batteryTemp );
-    cJSON_AddNumberToObject( temperatures, "case", rtData->caseTemp );
-    cJSON_AddNumberToObject( temperatures, "remoteSensor", rtData->remoteBatteryTemperature );
+    cJSON_AddNumberToObject( temperatures, "battery", FP21P( rtData->batteryTemp ) );
+    cJSON_AddNumberToObject( temperatures, "case", FP21P( rtData->caseTemp ) );
+    cJSON_AddNumberToObject( temperatures, "remoteSensor", FP21P( rtData->remoteBatteryTemperature ) ); 
     cJSON_AddItemToObject( message, "temperatures", temperatures );
     
     //
@@ -165,7 +148,6 @@ char *createJSONMessage (modbus_t *ctx, const char *topic, const RatedData_t *ra
     cJSON_AddBoolToObject( chargingStatus, "pvInputIsShort", rtStatusData->pvInputIsShort );
     cJSON_AddItemToObject( message, "chargingStatus", chargingStatus );
         
-    
     //
     //  dischargingStatus - nested object
     cJSON *dischargingStatus = cJSON_CreateObject();
@@ -188,45 +170,50 @@ char *createJSONMessage (modbus_t *ctx, const char *topic, const RatedData_t *ra
     cJSON *settings = cJSON_CreateObject();
     cJSON_AddStringToObject( settings, "batteryType", setData->batteryType );
     cJSON_AddNumberToObject( settings, "batteryCapacity", setData->batteryCapacity );
-    cJSON_AddNumberToObject( settings, "tempCompensationCoeff", setData->tempCompensationCoeff );
+    cJSON_AddNumberToObject( settings, "tempCompensationCoeff", FP21P( setData->tempCompensationCoeff ) );
     
-    cJSON_AddNumberToObject( settings, "highVoltageDisconnect", setData->highVoltageDisconnect );
-    cJSON_AddNumberToObject( settings, "chargingLimitVoltage", setData->chargingLimitVoltage );
-    cJSON_AddNumberToObject( settings, "overVoltageReconnect", setData->overVoltageReconnect );
+    cJSON_AddNumberToObject( settings, "highVoltageDisconnect", FP21P( setData->highVoltageDisconnect ) );
+    cJSON_AddNumberToObject( settings, "chargingLimitVoltage", FP21P( setData->chargingLimitVoltage ) );
+    cJSON_AddNumberToObject( settings, "overVoltageReconnect", FP21P( setData->overVoltageReconnect ) );
     
-    cJSON_AddNumberToObject( settings, "equalizationVoltage", setData->equalizationVoltage );
-    cJSON_AddNumberToObject( settings, "boostVoltage", setData->boostVoltage );
-    cJSON_AddNumberToObject( settings, "floatVoltage", setData->floatVoltage );
+    cJSON_AddNumberToObject( settings, "equalizationVoltage", FP21P( setData->equalizationVoltage ) );
+    cJSON_AddNumberToObject( settings, "boostVoltage", FP21P( setData->boostVoltage ) );
+    cJSON_AddNumberToObject( settings, "floatVoltage", FP21P( setData->floatVoltage ) );
     
-    cJSON_AddNumberToObject( settings, "boostReconnectVoltage", setData->boostReconnectVoltage );
-    cJSON_AddNumberToObject( settings, "lowVoltageReconnect", setData->lowVoltageReconnect );
-    cJSON_AddNumberToObject( settings, "underVoltageRecover", setData->underVoltageRecover );
-    cJSON_AddNumberToObject( settings, "underVoltageWarning", setData->underVoltageWarning );
-    cJSON_AddNumberToObject( settings, "lowVoltageDisconnect", setData->lowVoltageDisconnect );
+    cJSON_AddNumberToObject( settings, "boostReconnectVoltage", FP21P( setData->boostReconnectVoltage ) );
+    cJSON_AddNumberToObject( settings, "lowVoltageReconnect", FP21P( setData->lowVoltageReconnect ) );
+    cJSON_AddNumberToObject( settings, "underVoltageRecover", FP21P( setData->underVoltageRecover ) );
+    cJSON_AddNumberToObject( settings, "underVoltageWarning", FP21P( setData->underVoltageWarning ) );
+    cJSON_AddNumberToObject( settings, "lowVoltageDisconnect", FP21P( setData->lowVoltageDisconnect ) );
     
-    cJSON_AddNumberToObject( settings, "dischargingLimitVoltage", setData->dischargingLimitVoltage );
-    cJSON_AddNumberToObject( settings, "equalizationChargingCycle", setData->equalizationChargingCycle );
+    cJSON_AddNumberToObject( settings, "dischargingLimitVoltage", FP21P( setData->dischargingLimitVoltage ) );
+    //cJSON_AddNumberToObject( settings, "equalizationChargingCycle", setData->equalizationChargingCycle );
     
-    cJSON_AddNumberToObject( settings, "batteryTempWarningUpperLimit", setData->batteryTempWarningUpperLimit );
-    cJSON_AddNumberToObject( settings, "batteryTempWarningLowerLimit", setData->batteryTempWarningLowerLimit );
+    cJSON_AddNumberToObject( settings, "batteryTempWarningUpperLimit", FP21P( setData->batteryTempWarningUpperLimit ) );
+    cJSON_AddNumberToObject( settings, "batteryTempWarningLowerLimit", FP21P( setData->batteryTempWarningLowerLimit ) );
  
-    cJSON_AddNumberToObject( settings, "controllerInnerTempUpperLimit", setData->controllerInnerTempUpperLimit );
-    cJSON_AddNumberToObject( settings, "controllerInnerTempUpperLimitRecover", setData->controllerInnerTempUpperLimitRecover );
+    cJSON_AddNumberToObject( settings, "controllerInnerTempUpperLimit", FP21P( setData->controllerInnerTempUpperLimit ) );
+    cJSON_AddNumberToObject( settings, "controllerInnerTempUpperLimitRecover", FP21P( setData->controllerInnerTempUpperLimitRecover ) );
     
-    cJSON_AddNumberToObject( settings, "powerComponentTempUpperLimit", setData->powerComponentTempUpperLimit );
-    cJSON_AddNumberToObject( settings, "powerComponentTempUpperLimitRecover", setData->powerComponentTempUpperLimitRecover );
-    cJSON_AddNumberToObject( settings, "lineImpedence", setData->lineImpedence );
+    cJSON_AddNumberToObject( settings, "powerComponentTempUpperLimit", FP21P( setData->powerComponentTempUpperLimit ) );
+    cJSON_AddNumberToObject( settings, "powerComponentTempUpperLimitRecover", FP21P( setData->powerComponentTempUpperLimitRecover ) );
+    //cJSON_AddNumberToObject( settings, "lineImpedence", setData->lineImpedence ) );
     
-    cJSON_AddNumberToObject( settings, "daytimeThresholdVoltage", setData->daytimeThresholdVoltage );
+    cJSON_AddNumberToObject( settings, "daytimeThresholdVoltage", FP21P( setData->daytimeThresholdVoltage ) );
     cJSON_AddNumberToObject( settings, "lightSignalStartupTime", setData->lightSignalStartupTime );
-    cJSON_AddNumberToObject( settings, "lighttimeThresholdVoltage", setData->lighttimeThresholdVoltage );
+    cJSON_AddNumberToObject( settings, "lighttimeThresholdVoltage", FP21P( setData->lighttimeThresholdVoltage ) );
     cJSON_AddNumberToObject( settings, "lightSignalCloseDelayTime", setData->lightSignalCloseDelayTime );
     cJSON_AddNumberToObject( settings, "localControllingModes", setData->localControllingModes );
-    cJSON_AddNumberToObject( settings, "workingTimeLength1", setData->workingTimeLength1 );
-    cJSON_AddNumberToObject( settings, "workingTimeLength2", setData->workingTimeLength2 );
-    
-    
+
+
     char    dtBuffer[ 32 ];
+    snprintf( dtBuffer, sizeof dtBuffer, "%02d:%02d", (setData->workingTimeLength1 >> 8), (setData->workingTimeLength1 & 0XFF) );
+    cJSON_AddStringToObject( settings, "workingTimeLength1", dtBuffer );
+
+    snprintf( dtBuffer, sizeof dtBuffer, "%02d:%02d", (setData->workingTimeLength2 >> 8), (setData->workingTimeLength2 & 0XFF) );
+    cJSON_AddStringToObject( settings, "workingTimeLength2", dtBuffer );
+    
+    
     snprintf( dtBuffer, sizeof dtBuffer, "%02d:%02d:%02d", setData->turnOnTiming1_hours, setData->turnOnTiming1_minutes, setData->turnOnTiming1_seconds );
     cJSON_AddStringToObject( settings, "turnOnTiming1", dtBuffer );
             
@@ -239,22 +226,14 @@ char *createJSONMessage (modbus_t *ctx, const char *topic, const RatedData_t *ra
     snprintf( dtBuffer, sizeof dtBuffer, "%02d:%02d:%02d", setData->turnOffTiming2_hours, setData->turnOffTiming2_minutes, setData->turnOffTiming2_seconds );
     cJSON_AddStringToObject( settings, "turnOffTiming2", dtBuffer );
 
-    //
-    //  Set default values of the whole night - top 8 bits are hours, bottom 8 are minutes
     snprintf( dtBuffer, sizeof dtBuffer, "%02d:%02d", ((setData->lengthOfNight & 0xFF00) >> 8), (setData->lengthOfNight & 0x00FF) ); 
     cJSON_AddStringToObject( settings, "lengthOfNight", dtBuffer );
     
     
+
     cJSON_AddStringToObject( settings, "batteryRatedVoltageCode", (setData->batteryRatedVoltageCode == 0) ? "Auto" : ( (setData->batteryRatedVoltageCode == 1) ? "12V" : "24V") );
-    
-    
-    // cJSON_AddNumberToObject( settings, "loadTimingControlSelection", setData->loadTimingControlSelection );
     cJSON_AddStringToObject( settings, "loadTimingControlSelection", (setData->batteryRatedVoltageCode == 0) ? "1 Timer" : "2 Timers" );
-    
-    
-    // cJSON_AddNumberToObject( settings, "defaultLoadOnOffManualMode", setData->defaultLoadOnOffManualMode );
     cJSON_AddStringToObject( settings, "defaultLoadOnOffManualMode", (setData->batteryRatedVoltageCode == 0) ? "Off" : "On" );
-    
     
     cJSON_AddNumberToObject( settings, "equalizeDuration", setData->equalizeDuration );
     cJSON_AddNumberToObject( settings, "boostDuration", setData->boostDuration );
@@ -264,25 +243,23 @@ char *createJSONMessage (modbus_t *ctx, const char *topic, const RatedData_t *ra
      
     cJSON_AddItemToObject( message, "settings", settings );
 
-    
-    
     //
     //  statistics - nested object
     cJSON *statistics = cJSON_CreateObject();
-    cJSON_AddNumberToObject( statistics, "maximumInputVoltageToday", stats->maximumInputVoltageToday );
-    cJSON_AddNumberToObject( statistics, "minimumInputVoltageToday", stats->minimumInputVoltageToday );
-    cJSON_AddNumberToObject( statistics, "maximumBatteryVoltageToday", stats->maximumBatteryVoltageToday );
-    cJSON_AddNumberToObject( statistics, "minimumBatteryVoltageToday", stats->minimumBatteryVoltageToday );
-    cJSON_AddNumberToObject( statistics, "consumedEnergyToday", stats->consumedEnergyToday );
-    cJSON_AddNumberToObject( statistics, "consumedEnergyMonth", stats->consumedEnergyMonth );
-    cJSON_AddNumberToObject( statistics, "consumedEnergyYear", stats->consumedEnergyYear );
-    cJSON_AddNumberToObject( statistics, "totalConsumedEnergy", stats->totalConsumedEnergy );
-    cJSON_AddNumberToObject( statistics, "generatedEnergyToday", stats->generatedEnergyToday );
-    cJSON_AddNumberToObject( statistics, "generatedEnergyMonth", stats->generatedEnergyMonth );
-    cJSON_AddNumberToObject( statistics, "generatedEnergyYear", stats->generatedEnergyYear );
-    cJSON_AddNumberToObject( statistics, "totalGeneratedEnergy", stats->totalGeneratedEnergy );
-    cJSON_AddNumberToObject( statistics, "batteryVoltage", stats->batteryVoltage );
-    cJSON_AddNumberToObject( statistics, "batteryCurrent", stats->batteryCurrent );
+    cJSON_AddNumberToObject( statistics, "maximumInputVoltageToday", FP22P( stats->maximumInputVoltageToday ) );
+    cJSON_AddNumberToObject( statistics, "minimumInputVoltageToday", FP22P( stats->minimumInputVoltageToday ) );
+    cJSON_AddNumberToObject( statistics, "maximumBatteryVoltageToday", FP22P( stats->maximumBatteryVoltageToday ) );
+    cJSON_AddNumberToObject( statistics, "minimumBatteryVoltageToday", FP22P( stats->minimumBatteryVoltageToday ) );
+    cJSON_AddNumberToObject( statistics, "consumedEnergyToday", FP22P( stats->consumedEnergyToday ) );
+    cJSON_AddNumberToObject( statistics, "consumedEnergyMonth", FP22P( stats->consumedEnergyMonth ) );
+    cJSON_AddNumberToObject( statistics, "consumedEnergyYear", FP22P( stats->consumedEnergyYear ) );
+    cJSON_AddNumberToObject( statistics, "totalConsumedEnergy", FP22P( stats->totalConsumedEnergy ) );
+    cJSON_AddNumberToObject( statistics, "generatedEnergyToday", FP22P( stats->generatedEnergyToday ) );
+    cJSON_AddNumberToObject( statistics, "generatedEnergyMonth", FP22P( stats->generatedEnergyMonth ) );
+    cJSON_AddNumberToObject( statistics, "generatedEnergyYear", FP22P( stats->generatedEnergyYear ) );
+    cJSON_AddNumberToObject( statistics, "totalGeneratedEnergy", FP22P( stats->totalGeneratedEnergy ) );
+    cJSON_AddNumberToObject( statistics, "batteryVoltage", FP22P( stats->batteryVoltage ) );
+    cJSON_AddNumberToObject( statistics, "batteryCurrent", FP21P( stats->batteryCurrent ) );
     cJSON_AddItemToObject( message, "statistics", statistics );
 
     //

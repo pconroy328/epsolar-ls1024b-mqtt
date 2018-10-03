@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * File:    commandQueue.c
+ * author:  patrick conroy
+ * 
  */
 
 
@@ -24,7 +24,7 @@ static  char    currentDateTimeBuffer[ 80 ];
 
 static  FILE    *fp;
 static  int     logFileOpen = FALSE;
-static  int     debugValue;              // from the INI file
+static  int     debugValue = 3; 
 
 // ----------------------------------------------------------------------------
 //
@@ -39,8 +39,6 @@ static  int     debugValue;              // from the INI file
 // ----------------------------------------------------------------------------
 void    Logger_Initialize (char *fileName, int debugLevel)
 {
-    // logCat = log4c_category_get( "homeheartbeat" );
-    // (void) log4c_init();
     printf( "ATTEMPTING TO OPEN [%s] DEBUG LEVEL [%d]\n", fileName, debugLevel ); fflush(stdout);
     if (fileName != (char *) 0 ) {
         debugValue = debugLevel;
@@ -53,7 +51,6 @@ void    Logger_Initialize (char *fileName, int debugLevel)
 // ----------------------------------------------------------------------------
 void    Logger_Terminate()
 {
-    // (void) log4c_fini();
     if (logFileOpen)
         fclose( fp );
 }
@@ -200,8 +197,6 @@ static  char    *getCurrentDateTime()
         currentDateTimeBuffer[ len + 2 ] = ((milliSeconds % 100) / 10) + '0';
         currentDateTimeBuffer[ len + 3 ] = (milliSeconds % 10) + '0';
         currentDateTimeBuffer[ len + 4 ] = '\0';       
-        
-        //printf( "Milliseconds = %d, string [%s]\n", milliSeconds, currentDateTimeBuffer );
     }
     return &currentDateTimeBuffer[ 0 ];    
 }

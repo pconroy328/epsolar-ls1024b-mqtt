@@ -2,8 +2,11 @@
  * File:   main.c
  * Author: pconroy
  *
- * Code to communicate with the LandStar LS1024B PWM Solar Charge Controller
- * and send status information out as JSON Packets over MQTT
+ * Code to communicate with the LandStar LS1024B PWM Solar Charge Controller (SCC)
+ * and send status information out as JSON Packets over MQTT.
+ * 
+ * Also to listen for incoming MQTT commands that set parameters within the 
+ * Controller.
  * 
  * Created on June 13, 2018, 11:46 AM
  */
@@ -15,13 +18,16 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
+#include <pthread.h>
 
 #include <modbus/modbus.h>
 
 #include "logger.h"
 #include "ls1024b.h"
 #include "mqtt.h"
+#include "doCommand.h"
 #include "commandQueue.h"
+#include "jsonMessage.h"
 
 
 //  
@@ -29,71 +35,90 @@
 static  void    parseCommandLine( int, char ** );
 
 
-
-static  int     sleepSeconds = 15;
-static  char    *brokerHost = "ec2-52-32-56-28.us-west-2.compute.amazonaws.com";
-static  char    *controllerID = "1";
-static  char    *devicePort = "/dev/ttyUSB0";
-//static  char    *clientID = "ls1024b";          // fix - add random
-
-static  char    *topTopic = "LS1024B";
-static  char    fullTopic[ 1024 ];
-static  char    subscriptionTopic[ 1024 ];
+static  char    *version = "LS1024B_MQTT SCC Controller - version 2.0.3 (controlling FP precision)";
 
 
-extern char *createJSONMessage (modbus_t *ctx, const char *topic, const RatedData_t *ratedData, 
-        const RealTimeData_t *rtData, const RealTimeStatus_t *rtStatusData, 
-        const Settings_t *setData, const StatisticalParameters_t *stats);
+static  int     sleepSeconds = 15;                  // How often to send out SCC data packets
+static  char    *brokerHost = "10.0.0.11";          // default address of our MQTT broker
+static  char    *controllerID = "1";                // Assigned an arbitrary ID to our SCC in case we have more than one
+static  char    *devicePort = "/dev/ttyUSB0";       // Port where our SCC is connected
+static  int     loggingLevel = 3;
+
+static  char    *topTopic = "LS1024B";              // MQTT top level topic
+static  char    publishTopic[ 1024 ];               // published data will be on "<topTopic>/<controlleID>/DATA"
+static  char    subscriptionTopic[ 1024 ];          // subscribe to <"<topTopic>/<controlleID>/COMMAND"
 
 
-extern int     doCommand( modbus_t *ctx, mqttCommand_t *cmd );
-// extern void    MQTT_MessageReceivedHandler (struct mosquitto *mosq, void *userdata, const struct mosquitto_message *msg);
+
+
 
 // -----------------------------------------------------------------------------
 int main (int argc, char* argv[]) 
 {
     modbus_t    *ctx;
     
-    printf( "LS1024B_MQTT application - version 1.9.0 (cleanup and add setters)\n" );
+    printf( "%s\n", version );
     
     parseCommandLine( argc, argv );
-    Logger_Initialize( "ls1024b.log", 3 );
+    Logger_Initialize( "ls1024b.log", loggingLevel );           
+    Logger_LogWarning( "%s\n", version );
     
     //
     // Create a FIFO queue for our incoming Commands over MQTT
     createQueue( 0, 0 );
-    
+
     //
-    // Need to create a unique client ID
+    // Connect to our MQTT Broker
     MQTT_Initialize( controllerID, brokerHost );
     
+    
+    //
+    // Modbus - open the SCC port. We know it's 115.2K 8N1
     Logger_LogInfo( "Opening %s, 115200 8N1\n", devicePort );
     ctx = modbus_new_rtu( devicePort, 115200, 'N', 8, 1 );
     if (ctx == NULL) {
         Logger_LogFatal( "Unable to create the libmodbus context\n" );
         return -1;
     }
-
+    
+    
+    //
+    // I don't know if we need to set the SCC Slave ID or not
     Logger_LogInfo( "Setting slave ID to %X\n", LANDSTAR_1024B_ID );
     modbus_set_slave( ctx, LANDSTAR_1024B_ID );
 
-    puts( "Connecting" );
     if (modbus_connect( ctx ) == -1) {
         Logger_LogFatal( "Connection failed: %s\n", modbus_strerror( errno ) );
         modbus_free( ctx );
         return -1;
     }
     
+    Logger_LogInfo( "Port to Solar Charge Controller is open.\n", devicePort );
 
-    snprintf( fullTopic, sizeof fullTopic, "%s/%s/%s", topTopic, controllerID, "DATA" );
-    Logger_LogInfo( "Publishing messaages to MQTT Topic [%s]\n", fullTopic );
     
+    //
+    //  Start up a new thread to watch the Command Queue
+    pthread_t   commandProcessingThread;
+    if(pthread_create( &commandProcessingThread, NULL, processInboundCommand, ctx ) ) {
+        Logger_LogFatal( "Unable to start the command processing thread!\n" );
+        perror( "Error:" );
+        return -1;
+    }
+
+
+    //
+    //  Concatenate topTopic and controller ID to create our Pub and Sub Topics
+    snprintf( publishTopic, sizeof publishTopic, "%s/%s/%s", topTopic, controllerID, "DATA" );
+    Logger_LogInfo( "Publishing messages to MQTT Topic [%s]\n", publishTopic );
     
     snprintf( subscriptionTopic, sizeof subscriptionTopic, "%s/%s/%s", topTopic, controllerID, "COMMAND" );
     Logger_LogInfo( "Subscribing to commands on MQTT Topic [%s]", subscriptionTopic );
     MQTT_Subscribe ( subscriptionTopic, 0 );
 
     
+    //
+    //  I have 5 Structures because that's the way the SCC Documentation was organized
+    //  There's no reason to break it up into 5.  It could have been one, or several
     RatedData_t             ratedData;
     RealTimeData_t          realTimeData;
     RealTimeStatus_t        realTimeStatusData;
@@ -104,10 +129,9 @@ int main (int argc, char* argv[])
     int seconds, minutes, hour, day, month, year;
     getRealtimeClock( ctx, &seconds, &minutes, &hour, &day, &month, &year );
     Logger_LogInfo( "System Clock set to: %02d/%02d/%02d %02d:%02d:%02d\n", month, day, year, hour, minutes, seconds );
-    Logger_LogInfo( "Setting battery capacity to 5AH, type to '1' and loadControlMode to 0x00\n" );
-    setBatteryCapacity( ctx, 5 );
-    setBatteryType( ctx, 1 );
 
+    //
+    //  Loop forever - read SCC data and send it out
     while (TRUE) {      
         //
         //  every time thru the loop - zero out the structs!
@@ -128,7 +152,7 @@ int main (int argc, char* argv[])
         //
         // craft a JSON message from the data 
         char    *jsonMessage = createJSONMessage( ctx, 
-                                            fullTopic,
+                                            publishTopic,
                                             &ratedData, 
                                             &realTimeData, 
                                             &realTimeStatusData,
@@ -138,22 +162,21 @@ int main (int argc, char* argv[])
        
         //
         // Publish it to our MQTT broker 
-        MQTT_PublishData( fullTopic, jsonMessage, strlen( jsonMessage ) );
-
-        //
-        //  did someone send us a comand?
-        mqttCommand_t   *command = removeElement();
-        if (command != NULL) {
-            doCommand( ctx, command );
-            free( command );
-        }
+        MQTT_PublishData( publishTopic, jsonMessage, strlen( jsonMessage ) );
         
         free( jsonMessage );
         sleep( sleepSeconds );
     }
 
+    
+    //
+    // we never get here!
     MQTT_Unsubscribe( subscriptionTopic );
     MQTT_Teardown( NULL );
+
+    if (pthread_join( commandProcessingThread, NULL )) {
+        Logger_LogError( "Shutting down but unable to join the commandProcessingThread\n" );
+    }    
     
     destroyQueue();
     
@@ -162,7 +185,7 @@ int main (int argc, char* argv[])
     Logger_LogInfo( "Done" );
     Logger_Terminate();
     
-    return (EXIT_SUCCESS);
+    return( EXIT_SUCCESS );
 }
 
 // -----------------------------------------------------------------------------
@@ -170,11 +193,12 @@ static
 void    showHelp()
 {
     puts( "Options" );
-    puts( "  -h  <string>    MQTT host to connect to" );
-    puts( "  -t  <string>    MQTT top level topic" );
-    puts( "  -s  N           sleep between sends <seconds>" );
-    puts( "  -i  <string>    give this controller an identifier (defaults to '1')" );
-    puts( "  -p  <string>    open this /dev/port to talk to contoller (defaults to /dev/ttyUSB0)" );
+    puts( "  -h  <string>   MQTT host to connect to" );
+    puts( "  -t  <string>   MQTT top level topic" );
+    puts( "  -s  N          sleep between sends <seconds>" );
+    puts( "  -i  <string>   give this controller an identifier (defaults to '1')" );
+    puts( "  -p  <string>   open this /dev/port to talk to contoller (defaults to /dev/ttyUSB0)" );
+    puts( "  -v  N          logging level 1..5" );
     exit( 1 ); 
 }
 
@@ -191,43 +215,16 @@ void    parseCommandLine (int argc, char *argv[])
     //  -p  <string>    open this /dev/port to talk to contoller (defaults to /dev/ttyUSB0
     char    c;
     
-    while (((c = getopt( argc, argv, "h:t:s:i:p:" )) != -1) && (c != 255)) {
+    while (((c = getopt( argc, argv, "h:t:s:i:p:v:" )) != -1) && (c != 255)) {
         switch (c) {
-            case 'h':   brokerHost = optarg;    break;
-            case 's':   sleepSeconds = atoi( optarg );      break;
-            case 't':   topTopic = optarg;      break;
-            case 'i':   controllerID = optarg;    break;
-            case 'p':   devicePort = optarg;    break;
+            case 'h':   brokerHost = optarg;            break;
+            case 's':   sleepSeconds = atoi( optarg );  break;
+            case 't':   topTopic = optarg;              break;
+            case 'i':   controllerID = optarg;          break;
+            case 'p':   devicePort = optarg;            break;
+            case 'V':   loggingLevel = atoi( optarg );  break;
             
             default:    showHelp();     break;
         }
     }
-}
-
-// -----------------------------------------------------------------------------
-static  char    currentDateTimeBuffer[ 80 ];
-char    *getCurrentDateTime (void)
-{
-    //
-    // Something quick and dirty... Fix this later - thread safe
-    time_t  current_time;
-    struct  tm  *tmPtr;
- 
-    memset( currentDateTimeBuffer, '\0', sizeof currentDateTimeBuffer );
-    
-    /* Obtain current time as seconds elapsed since the Epoch. */
-    current_time = time( NULL );
-    if (current_time > 0) {
-        /* Convert to local time format. */
-        tmPtr = localtime( &current_time );
- 
-        if (tmPtr != NULL) {
-            strftime( currentDateTimeBuffer,
-                    sizeof currentDateTimeBuffer,
-                    "%FT%T%z",                           // ISO 8601 Format
-                    tmPtr );
-        }
-    }
-    
-    return &currentDateTimeBuffer[ 0 ];
 }

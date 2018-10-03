@@ -5,6 +5,8 @@
                    displayName="Header Files"
                    projectFiles="true">
       <itemPath>commandQueue.h</itemPath>
+      <itemPath>doCommand.h</itemPath>
+      <itemPath>jsonMessage.h</itemPath>
       <itemPath>logger.h</itemPath>
       <itemPath>mqtt.h</itemPath>
     </logicalFolder>
@@ -63,7 +65,11 @@
       </item>
       <item path="doCommand.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="doCommand.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="jsonMessage.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="jsonMessage.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="logger.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -103,7 +109,11 @@
       </item>
       <item path="doCommand.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="doCommand.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="jsonMessage.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="jsonMessage.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="logger.c" ex="false" tool="0" flavor2="0">
       </item>
